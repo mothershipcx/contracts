@@ -1,0 +1,23 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "Mothership Token Sale Smart contracts",
+  "main": "index.js",
+  "dependencies": {
+    "zeppelin-solidity": "^1.0.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sabakaio/mothership-contracts.git"
+  },
+  "author": "Mothership",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sabakaio/mothership-contracts/issues"
+  },
+  "homepage": "https://github.com/sabakaio/mothership-contracts#readme"
+}
