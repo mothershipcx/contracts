@@ -1,11 +1,12 @@
 const SIT = artifacts.require('SIT')
 
-const SIT_TOTAL_SUPPLY_CAP = 40000000
+const assertFail = require('./helpers/assertFail')
 
 contract('Mothership tokens contribution', function(accounts) {
-  const mothership = accounts[0]
-  const sitHolder1 = accounts[1]
-  const sitHolder2 = accounts[2]
+  const SIT_TOTAL_SUPPLY_CAP = 40000000
+
+  const sitHolder1 = accounts[0]
+  const sitHolder2 = accounts[1]
 
   let sit
 
@@ -59,18 +60,9 @@ contract('Mothership tokens contribution', function(accounts) {
           'total supply should increase after minting new tokens',
         )
 
-        try {
+        await assertFail(async function() {
           await sit.mint(sitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
-          assert(
-            false,
-            'minting over the total supply cap should throw an error',
-          )
-        } catch (e) {
-          assert.equal(
-            e.message,
-            'VM Exception while processing transaction: invalid opcode',
-          )
-        }
+        }, 'minting over the total supply cap should throw an error')
       })
     })
   })
