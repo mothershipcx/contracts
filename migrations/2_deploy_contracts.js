@@ -1,5 +1,5 @@
-const MetaToken = artifacts.require('MetaToken')
+const SIT = artifacts.require('SIT')
 
 module.exports = function(deployer) {
-  deployer.deploy(MetaToken)
+  deployer.deploy(SIT)
 }
