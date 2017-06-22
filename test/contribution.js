@@ -34,6 +34,7 @@ contract('Mothership tokens contribution', function(accounts) {
         { name: 'holder1', account: sitHolder1, amount: sitHolder1Amount },
         { name: 'holder2', account: sitHolder2, amount: sitHolder2Amount },
       ]
+
       sitHolders.forEach(test => {
         it(`could mint SIT token for ${test.name}`, async function() {
           assert.equal(
@@ -73,6 +74,12 @@ contract('Mothership tokens contribution', function(accounts) {
         await assertFail(async function() {
           await sit.mint(sitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
         }, 'minting over the total supply cap should throw an error')
+      })
+    })
+
+    it('nobody can buy', async function() {
+      await assertFail(async function() {
+        await sit.send(web3.toWei(1))
       })
     })
   })
