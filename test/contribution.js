@@ -13,30 +13,32 @@ contract('Mothership tokens contribution', function(accounts) {
 
   it('Deploys all contracts', async function() {
     sit = await SIT.new()
-    assert.equal(
-      await sit.totalSupply(),
-      0,
-      'SIT initial total supply should be 0',
-    )
-    assert.equal(
-      await sit.totalSupplyCap(),
-      SIT_TOTAL_SUPPLY_CAP,
-      `SIT total supply should be ${SIT_TOTAL_SUPPLY_CAP}`,
-    )
   })
 
   describe('SIT', function() {
-    describe('minting tokens', function() {
-      const sitHolder1Amount = 10000000,
-        sitHolder2Amount = 20000000
+    it('total supply', async function() {
+      assert.equal(
+        await sit.totalSupply(),
+        0,
+        'SIT initial total supply should be 0',
+      )
+      assert.equal(
+        await sit.totalSupplyCap(),
+        SIT_TOTAL_SUPPLY_CAP,
+        `SIT total supply should be ${SIT_TOTAL_SUPPLY_CAP}`,
+      )
+    })
 
+    describe('minting tokens', function() {
       const sitHolders = [
-        { name: 'holder1', account: sitHolder1, amount: sitHolder1Amount },
-        { name: 'holder2', account: sitHolder2, amount: sitHolder2Amount },
+        { name: 'holder1', account: sitHolder1, amount: 10000000 },
+        { name: 'holder2', account: sitHolder2, amount: 20000000 },
       ]
 
       sitHolders.forEach(test => {
         it(`could mint SIT token for ${test.name}`, async function() {
+          const totalSupply = await sit.totalSupply()
+
           assert.equal(
             await sit.balanceOf(test.account),
             0,
@@ -54,6 +56,13 @@ contract('Mothership tokens contribution', function(accounts) {
             `SIT holder balance for account ${test.name} should be increased`,
           )
 
+          const newTotalSupply = await sit.totalSupply()
+          assert.equal(
+            newTotalSupply.toNumber(),
+            totalSupply.add(test.amount).toNumber(),
+            `SIT total supply should be increased by ${test.amount} after minting for ${test.name}`,
+          )
+
           await assertFail(async function() {
             const res = await sit.mint(test.account, 1, {
               from: test.account,
@@ -63,15 +72,9 @@ contract('Mothership tokens contribution', function(accounts) {
         })
       })
 
-      it('total supply', async function() {
-        const totalSupply = await sit.totalSupply()
-        assert.equal(
-          totalSupply,
-          sitHolder1Amount + sitHolder2Amount,
-          'total supply should increase after minting new tokens',
-        )
-
+      it('stop minting if supply cap reached', async function() {
         await assertFail(async function() {
+          const totalSupply = await sit.totalSupply()
           await sit.mint(sitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
         }, 'minting over the total supply cap should throw an error')
       })
