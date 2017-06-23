@@ -1,16 +1,11 @@
 pragma solidity ^0.4.11;
 
-
 import "zeppelin-solidity/contracts/token/MintableToken.sol";
-import "zeppelin-solidity/contracts/SafeMath.sol";
-
 
 /**
  * @title MetaToken
  */
 contract MetaToken is MintableToken {
-  using SafeMath for uint256;
-
   string public name;          // The Token's name: e.g. Mothership Tokens
   string public symbol;        // An identifier: e.g. MSP
   uint8 public decimals;       // Number of decimals of the smallest unit 
