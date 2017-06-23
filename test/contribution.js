@@ -1,9 +1,11 @@
 const SIT = artifacts.require('SIT')
+const MSP = artifacts.require('MSP')
 
 const assertFail = require('./helpers/assertFail')
 
 contract('Mothership tokens contribution', function(accounts) {
   const SIT_TOTAL_SUPPLY_CAP = 40000000
+  const MSP_TOTAL_SUPPLY_CAP = 200000000
 
   const mothership = accounts[0]
   const sitHolder1 = accounts[1]
@@ -13,6 +15,7 @@ contract('Mothership tokens contribution', function(accounts) {
 
   it('Deploys all contracts', async function() {
     sit = await SIT.new()
+    msp = await MSP.new()
   })
 
   describe('SIT', function() {
@@ -84,6 +87,21 @@ contract('Mothership tokens contribution', function(accounts) {
       await assertFail(async function() {
         await sit.send(web3.toWei(1))
       })
+    })
+  })
+
+  describe('MSP', function() {
+    it('total supply', async function() {
+      assert.equal(
+        await msp.totalSupply(),
+        0,
+        'MSP initial total supply should be 0',
+      )
+      assert.equal(
+        await msp.totalSupplyCap(),
+        MSP_TOTAL_SUPPLY_CAP,
+        `MSP total supply should be ${MSP_TOTAL_SUPPLY_CAP}`,
+      )
     })
   })
 })
