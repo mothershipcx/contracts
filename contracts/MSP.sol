@@ -1,16 +1,21 @@
 pragma solidity ^0.4.11;
 
-import "./MetaToken.sol";
+import "./MiniMeToken.sol";
 
-/**
- * @title Strategic Investors Token
- */
-contract MSP is MetaToken {
-  function MSP()
-    MetaToken(
-              "Mothership Token",
-              "MSP",
-              18,
-              200000000
-    ) {}
+/*
+  Copyright 2017, Anton Egorov (Mothership)
+*/
+
+contract MSP is MiniMeToken {
+
+  function MSP(address _tokenFactory)
+    MiniMeToken(
+                _tokenFactory,
+                0x0,                // no parent token
+                0,                  // no snapshot block number from parent
+                "Mothership Token", // Token name
+                18,                 // Decimals
+                "MSP",              // Symbol
+                false               // Enable transfers
+                ) {}
 }
