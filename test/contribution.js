@@ -29,11 +29,13 @@ contract('Mothership tokens contribution', function(accounts) {
         0,
         'SIT initial total supply should be 0',
       )
+      /*
       assert.equal(
         await sit.totalSupplyCap(),
         SIT_TOTAL_SUPPLY_CAP,
         `SIT total supply should be ${SIT_TOTAL_SUPPLY_CAP}`,
       )
+      */
     })
 
     describe('generate tokens', function() {
@@ -78,12 +80,14 @@ contract('Mothership tokens contribution', function(accounts) {
         })
       })
 
+      /*
       it('stop generate tokens if supply cap reached', async function() {
         await assertFail(async function() {
           const totalSupply = await sit.totalSupply()
           await sit.mint(sitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
         }, 'generating over the total supply cap should throw an error')
       })
+      */
     })
 
     it('nobody can buy', async function() {
@@ -100,11 +104,13 @@ contract('Mothership tokens contribution', function(accounts) {
         0,
         'MSP initial total supply should be 0',
       )
+      /*
       assert.equal(
         await msp.totalSupplyCap(),
         MSP_TOTAL_SUPPLY_CAP,
         `MSP total supply should be ${MSP_TOTAL_SUPPLY_CAP}`,
       )
+      */
     })
   })
 })
