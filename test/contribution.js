@@ -1,5 +1,6 @@
-const SIT = artifacts.require('SIT')
-const MSP = artifacts.require('MSP')
+const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
+const SIT = artifacts.require('SITMock')
+const MSP = artifacts.require('MSPMock')
 
 const assertFail = require('./helpers/assertFail')
 
@@ -11,11 +12,14 @@ contract('Mothership tokens contribution', function(accounts) {
   const sitHolder1 = accounts[1]
   const sitHolder2 = accounts[2]
 
+  let miniMeTokenFactory
   let sit
+  let msp
 
   it('Deploys all contracts', async function() {
-    sit = await SIT.new()
-    msp = await MSP.new()
+    miniMeTokenFactory = await MiniMeTokenFactory.new()
+    sit = await SIT.new(miniMeTokenFactory.address)
+    msp = await MSP.new(miniMeTokenFactory.address)
   })
 
   describe('SIT', function() {
@@ -32,14 +36,14 @@ contract('Mothership tokens contribution', function(accounts) {
       )
     })
 
-    describe('minting tokens', function() {
+    describe('generate tokens', function() {
       const sitHolders = [
         { name: 'holder1', account: sitHolder1, amount: 10000000 },
         { name: 'holder2', account: sitHolder2, amount: 20000000 },
       ]
 
       sitHolders.forEach(test => {
-        it(`could mint SIT token for ${test.name}`, async function() {
+        it(`could generate SIT token for ${test.name}`, async function() {
           const totalSupply = await sit.totalSupply()
 
           assert.equal(
@@ -49,8 +53,8 @@ contract('Mothership tokens contribution', function(accounts) {
           )
 
           assert.isOk(
-            await sit.mint(test.account, test.amount),
-            `SIT tokens should be minted for account ${test.name}`,
+            await sit.generateTokens(test.account, test.amount),
+            `SIT tokens should be generated for account ${test.name}`,
           )
 
           assert.equal(
@@ -63,23 +67,22 @@ contract('Mothership tokens contribution', function(accounts) {
           assert.equal(
             newTotalSupply.toNumber(),
             totalSupply.add(test.amount).toNumber(),
-            `SIT total supply should be increased by ${test.amount} after minting for ${test.name}`,
+            `SIT total supply should be increased by ${test.amount} after generating tokens for ${test.name}`,
           )
 
           await assertFail(async function() {
-            const res = await sit.mint(test.account, 1, {
+            const res = await sit.generateTokens(test.account, 1, {
               from: test.account,
             })
-            console.log('MINT', res)
-          }, `account ${test.name} could not mint SIT to itself`)
+          }, `account ${test.name} could not generate SIT to itself`)
         })
       })
 
-      it('stop minting if supply cap reached', async function() {
+      it('stop generate tokens if supply cap reached', async function() {
         await assertFail(async function() {
           const totalSupply = await sit.totalSupply()
           await sit.mint(sitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
-        }, 'minting over the total supply cap should throw an error')
+        }, 'generating over the total supply cap should throw an error')
       })
     })
 
