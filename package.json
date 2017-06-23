@@ -21,7 +21,7 @@
     "url": "git+https://github.com/sabakaio/mothership-contracts.git"
   },
   "author": "Mothership",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/sabakaio/mothership-contracts/issues"
   },
