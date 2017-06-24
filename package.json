@@ -4,6 +4,7 @@
   "description": "Mothership Token Sale Smart contracts",
   "main": "index.js",
   "dependencies": {
+    "truffle-hdwallet-provider": "^0.0.3",
     "zeppelin-solidity": "^1.0.7"
   },
   "devDependencies": {
@@ -11,10 +12,10 @@
     "truffle": "^3.2.5"
   },
   "scripts": {
-    "testrpc": "./node_modules/.bin/testrpc",
+    "testrpc": "./node_modules/.bin/testrpc --network_id 15",
     "compile": "./node_modules/.bin/truffle compile",
-    "migrate": "./node_modules/.bin/truffle migrate --reset",
-    "test": "./node_modules/.bin/truffle test"
+    "migrate": "./node_modules/.bin/truffle migrate --reset --network development",
+    "test": "./node_modules/.bin/truffle test --network development"
   },
   "repository": {
     "type": "git",
