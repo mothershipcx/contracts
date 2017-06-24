@@ -38,10 +38,16 @@ contract('Mothership tokens contribution', function(accounts) {
       */
     })
 
+    it('nobody can buy', async function() {
+      await assertFail(async function() {
+        await sit.send(web3.toWei(1))
+      })
+    })
+
     describe('generate tokens', function() {
       const sitHolders = [
-        { name: 'holder1', account: sitHolder1, amount: 10000000 },
-        { name: 'holder2', account: sitHolder2, amount: 20000000 },
+        { name: 'holder1', account: sitHolder1, amount: web3.toWei(10000000) },
+        { name: 'holder2', account: sitHolder2, amount: web3.toWei(20000000) },
       ]
 
       sitHolders.forEach(test => {
@@ -59,8 +65,9 @@ contract('Mothership tokens contribution', function(accounts) {
             `SIT tokens should be generated for account ${test.name}`,
           )
 
+          const balance = await sit.balanceOf(test.account)
           assert.equal(
-            await sit.balanceOf(test.account),
+            balance.toNumber(),
             test.amount,
             `SIT holder balance for account ${test.name} should be increased`,
           )
@@ -88,11 +95,21 @@ contract('Mothership tokens contribution', function(accounts) {
         }, 'generating over the total supply cap should throw an error')
       })
       */
-    })
 
-    it('nobody can buy', async function() {
-      await assertFail(async function() {
-        await sit.send(web3.toWei(1))
+      it('not transferable', async function() {
+        const amount = web3.toWei(1000)
+        const balance = await sit.balanceOf(sitHolder1)
+        assert.isAtLeast(
+          balance.toNumber(),
+          amount,
+          'SIT holder should have enough tokens to transfer',
+        )
+
+        await assertFail(async function() {
+          await sit.transfer(sitHolder2, amount, {
+            from: sitHolder1,
+          })
+        }, 'transfer is not allowed')
       })
     })
   })
