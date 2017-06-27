@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import "zeppelin/SafeMath.sol";
+import "zeppelin-solidity/contracts/SafeMath.sol";
 import "./interface/Controlled.sol";
 import "./interface/TokenController.sol";
 import "./SIT.sol";
@@ -77,7 +77,7 @@ contract MothershipContribution is Controlled, TokenController {
     paused = false;
   }
 
-  /// @notice This method should be called by the owner before the contribution
+  /// @notice This method should be called by the controller before the contribution
   ///  period starts This initializes most of the parameters
   /// @param _msp Address of the MSP token contract
   /// @param _mspController Token controller for the MSP that will be transferred after
@@ -105,7 +105,7 @@ contract MothershipContribution is Controlled, TokenController {
       address _destTokensSit,
       address _destTokensDevs,
 
-      address _sit,
+      address _sit
   ) public onlyController {
     // Initialize only once
     require(address(MSP) == 0x0);
@@ -140,7 +140,7 @@ contract MothershipContribution is Controlled, TokenController {
 
     // SIT amount should be no more than 20% of MSP total supply cap
     require(MiniMeToken(SIT).totalSupply() * 5 <= _totalSupplyCap);
-    totalSupplyCap = _totalSupplyCap
+    totalSupplyCap = _totalSupplyCap;
   }
 
   /// @notice If anybody sends Ether directly to this contract, consider he is
@@ -189,15 +189,15 @@ contract MothershipContribution is Controlled, TokenController {
     require(getBlockNumber().sub(lastCallBlock[caller]) >= maxCallFrequency);
     lastCallBlock[caller] = getBlockNumber();
 
-    uint256 toFund = msg.value
+    uint256 toFund = msg.value;
     if (toFund > 0) {
       uint256 tokensGenerated = toFund.mul(exchangeRate);
 
       // Check total supply cap reached
-      uint256 newTotalSupply = tokensGenerated.add(MSP.totalSupply())
+      uint256 newTotalSupply = tokensGenerated.add(MSP.totalSupply());
       if (newTotalSupply > totalSupplyCap) {
-        tokensGenerated = tokensGenerated.sub(newTotalSupply.sub(totalSupplyCap))
-        toFund = tokensGenerated.div(exchangeRate)
+        tokensGenerated = tokensGenerated.sub(newTotalSupply.sub(totalSupplyCap));
+        toFund = tokensGenerated.div(exchangeRate);
       }
 
       assert(MSP.generateTokens(_th, tokensGenerated));
@@ -225,8 +225,8 @@ contract MothershipContribution is Controlled, TokenController {
     if (_addr == 0) return false;
     uint256 size;
     assembly {
-    size := extcodesize(_addr)
-        }
+      size := extcodesize(_addr)
+    }
     return (size > 0);
   }
 
@@ -259,29 +259,29 @@ contract MothershipContribution is Controlled, TokenController {
   ///  sent tokens to this contract.
   /// @param _token The address of the token contract that you want to recover
   ///  set to 0 in case you want to extract ether.
-  function claimTokens(address _token) public onlyOwner {
+  function claimTokens(address _token) public onlyController {
     if (MSP.controller() == address(this)) {
       MSP.claimTokens(_token);
     }
     if (_token == 0x0) {
-      owner.transfer(this.balance);
+      controller.transfer(this.balance);
       return;
     }
 
     ERC20Token token = ERC20Token(_token);
     uint256 balance = token.balanceOf(this);
-    token.transfer(owner, balance);
-    ClaimedTokens(_token, owner, balance);
+    token.transfer(controller, balance);
+    ClaimedTokens(_token, controller, balance);
   }
 
 
   /// @notice Pauses the contribution if there is any issue
-  function pauseContribution() onlyOwner {
+  function pauseContribution() onlyController {
     paused = true;
   }
 
   /// @notice Resumes the contribution
-  function resumeContribution() onlyOwner {
+  function resumeContribution() onlyController {
     paused = false;
   }
 
