@@ -28,7 +28,7 @@ import "./MSP.sol";
   Original contract is https://github.com/status-im/status-network-token/blob/master/contracts/StatusContribution.sol
 */
 
-contract MothershipContribution is Controlled, TokenController {
+contract Contribution is Controlled, TokenController {
   using SafeMath for uint256;
 
   uint256 constant public maxGasPrice = 50000000000;
