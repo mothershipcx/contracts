@@ -4,6 +4,7 @@ const SIT = artifacts.require('SITMock')
 const MSP = artifacts.require('MSPMock')
 const Contribution = artifacts.require('ContributionMock')
 const ContributionWallet = artifacts.require('ContributionWallet')
+const SITExchanger = artifacts.require('SITExchanger')
 
 const assertFail = require('./helpers/assertFail')
 
@@ -40,6 +41,13 @@ contract('Mothership tokens contribution', function(accounts) {
       endBlock,
       contribution.address,
     )
+
+    sitExchanger = await SITExchanger.new(
+      sit.address,
+      msp.address,
+      contribution.address,
+    )
+
     await msp.changeController(contribution.address)
     await contribution.initialize(
       msp.address,
@@ -49,7 +57,7 @@ contract('Mothership tokens contribution', function(accounts) {
       startBlock,
       endBlock,
       contributionWallet.address,
-      multisigTeam.address, // TODO sitExchanger.address
+      sitExchanger.address,
       multisigTeam.address,
       sit.address,
     )
