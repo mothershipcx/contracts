@@ -3,7 +3,7 @@ pragma solidity ^0.4.11;
 import "./MiniMeToken.sol";
 
 /*
-  Copyright 2017, Anton Egorov (Mothership)
+  Copyright 2017, Anton Egorov (Mothership Foundation)
 */
 
 contract MSP is MiniMeToken {

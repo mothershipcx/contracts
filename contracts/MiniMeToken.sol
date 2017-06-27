@@ -6,7 +6,7 @@ import "./interface/Controlled.sol";
 import "./interface/ApproveAndCallReceiver.sol";
 
 /*
-  Copyright 2017, Anton Egorov (Mothership)
+  Copyright 2017, Anton Egorov (Mothership Foundation)
   Copyright 2017, Jordi Baylina (Giveth)
 
   Based on MineMeToken.sol from https://github.com/Giveth/minime
