@@ -44,7 +44,7 @@ contract Contribution is Controlled, TokenController {
 
   address public destEthDevs;
   address public destTokensSit;
-  address public destTokensDevs;
+  address public destTokensTeam;
 
   address public mspController;
 
@@ -89,7 +89,7 @@ contract Contribution is Controlled, TokenController {
   /// @param _destEthDevs Destination address where the contribution ether is sent
   /// @param _destTokensSit Address of the exchanger SIT-MSP where the MSP are sent
   ///  to be distributed to the SIT holders.
-  /// @param _destTokensDevs Address where the tokens for the dev are sent
+  /// @param _destTokensTeam Address where the tokens for the team are sent
   /// @param _sit Address of the SIT token contract
   function initialize(
       address _msp,
@@ -103,7 +103,7 @@ contract Contribution is Controlled, TokenController {
 
       address _destEthDevs,
       address _destTokensSit,
-      address _destTokensDevs,
+      address _destTokensTeam,
 
       address _sit
   ) public onlyController {
@@ -132,8 +132,8 @@ contract Contribution is Controlled, TokenController {
     require(_destTokensSit != 0x0);
     destTokensSit = _destTokensSit;
 
-    require(_destTokensDevs != 0x0);
-    destTokensDevs = _destTokensDevs;
+    require(_destTokensTeam != 0x0);
+    destTokensTeam = _destTokensTeam;
 
     require(_sit != 0x0);
     SIT = MiniMeToken(_sit);

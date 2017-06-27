@@ -1,20 +1,25 @@
+const MultiSigWallet = artifacts.require('MultiSigWallet')
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
 const SIT = artifacts.require('SITMock')
 const MSP = artifacts.require('MSPMock')
 const Contribution = artifacts.require('ContributionMock')
+const ContributionWallet = artifacts.require('ContributionWallet')
 
 const assertFail = require('./helpers/assertFail')
 
 contract('Mothership tokens contribution', function(accounts) {
   const addressMothership = accounts[0]
-  const addressDevs = accounts[1]
+  const addressTeam = accounts[1]
   const addressSitHolder1 = accounts[2]
   const addressSitHolder2 = accounts[3]
 
+  let multisigMothership
+  let multisigTeam
   let miniMeTokenFactory
   let sit
   let msp
   let contribution
+  let contributionWallet
 
   const startBlock = 1000000
   const endBlock = 1040000
@@ -22,11 +27,19 @@ contract('Mothership tokens contribution', function(accounts) {
   const exchangeRate = 5000
 
   it('Deploys all contracts', async function() {
+    multisigMothership = await MultiSigWallet.new([addressMothership], 1)
+    multisigTeam = await MultiSigWallet.new([addressTeam], 1)
+
     miniMeTokenFactory = await MiniMeTokenFactory.new()
     sit = await SIT.new(miniMeTokenFactory.address)
     msp = await MSP.new(miniMeTokenFactory.address)
 
     contribution = await Contribution.new()
+    contributionWallet = await ContributionWallet.new(
+      multisigMothership.address,
+      endBlock,
+      contribution.address,
+    )
     await msp.changeController(contribution.address)
     await contribution.initialize(
       msp.address,
@@ -35,9 +48,9 @@ contract('Mothership tokens contribution', function(accounts) {
       exchangeRate,
       startBlock,
       endBlock,
-      addressDevs, // TODO contributionWallet.address
-      addressDevs, // TODO sitExchanger.address
-      addressDevs, // TODO devTokensHolder.address,
+      contributionWallet.address,
+      multisigTeam.address, // TODO sitExchanger.address
+      multisigTeam.address,
       sit.address,
     )
   })
