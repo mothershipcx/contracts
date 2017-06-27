@@ -5,14 +5,16 @@ const MSP = artifacts.require('MSPMock')
 const Contribution = artifacts.require('ContributionMock')
 const ContributionWallet = artifacts.require('ContributionWallet')
 const SITExchanger = artifacts.require('SITExchanger')
+const MSPPlaceholder = artifacts.require('MSPPlaceholderMock')
 
 const assertFail = require('./helpers/assertFail')
 
 contract('Mothership tokens contribution', function(accounts) {
   const addressMothership = accounts[0]
-  const addressTeam = accounts[1]
-  const addressSitHolder1 = accounts[2]
-  const addressSitHolder2 = accounts[3]
+  const addressCommunity = accounts[1]
+  const addressTeam = accounts[2]
+  const addressSitHolder1 = accounts[3]
+  const addressSitHolder2 = accounts[4]
 
   let multisigMothership
   let multisigTeam
@@ -21,6 +23,7 @@ contract('Mothership tokens contribution', function(accounts) {
   let msp
   let contribution
   let contributionWallet
+  let mspPlaceholder
 
   const startBlock = 1000000
   const endBlock = 1040000
@@ -29,6 +32,7 @@ contract('Mothership tokens contribution', function(accounts) {
 
   it('Deploys all contracts', async function() {
     multisigMothership = await MultiSigWallet.new([addressMothership], 1)
+    multisigCommunity = await MultiSigWallet.new([addressCommunity], 1)
     multisigTeam = await MultiSigWallet.new([addressTeam], 1)
 
     miniMeTokenFactory = await MiniMeTokenFactory.new()
@@ -48,10 +52,17 @@ contract('Mothership tokens contribution', function(accounts) {
       contribution.address,
     )
 
+    mspPlaceholder = await MSPPlaceholder.new(
+      multisigCommunity.address,
+      msp.address,
+      contribution.address,
+      sitExchanger.address,
+    )
+
     await msp.changeController(contribution.address)
     await contribution.initialize(
       msp.address,
-      contribution.address, // TODO mspPlaceholder
+      mspPlaceholder.address,
       totalSupply,
       exchangeRate,
       startBlock,
