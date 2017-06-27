@@ -1,25 +1,45 @@
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
 const SIT = artifacts.require('SITMock')
 const MSP = artifacts.require('MSPMock')
+const Contribution = artifacts.require('ContributionMock')
 
 const assertFail = require('./helpers/assertFail')
 
 contract('Mothership tokens contribution', function(accounts) {
-  const SIT_TOTAL_SUPPLY_CAP = 40000000
-  const MSP_TOTAL_SUPPLY_CAP = 200000000
-
-  const mothership = accounts[0]
-  const sitHolder1 = accounts[1]
-  const sitHolder2 = accounts[2]
+  const addressMothership = accounts[0]
+  const addressDevs = accounts[1]
+  const addressSitHolder1 = accounts[2]
+  const addressSitHolder2 = accounts[3]
 
   let miniMeTokenFactory
   let sit
   let msp
+  let contribution
+
+  const startBlock = 1000000
+  const endBlock = 1040000
+  const totalSupply = 200000000
+  const exchangeRate = 5000
 
   it('Deploys all contracts', async function() {
     miniMeTokenFactory = await MiniMeTokenFactory.new()
     sit = await SIT.new(miniMeTokenFactory.address)
     msp = await MSP.new(miniMeTokenFactory.address)
+
+    contribution = await Contribution.new()
+    await msp.changeController(contribution.address)
+    await contribution.initialize(
+      msp.address,
+      contribution.address, // TODO mspPlaceholder
+      totalSupply,
+      exchangeRate,
+      startBlock,
+      endBlock,
+      addressDevs, // TODO contributionWallet.address
+      addressDevs, // TODO sitExchanger.address
+      addressDevs, // TODO devTokensHolder.address,
+      sit.address,
+    )
   })
 
   describe('SIT', function() {
@@ -46,8 +66,16 @@ contract('Mothership tokens contribution', function(accounts) {
 
     describe('generate tokens', function() {
       const sitHolders = [
-        { name: 'holder1', account: sitHolder1, amount: web3.toWei(10000000) },
-        { name: 'holder2', account: sitHolder2, amount: web3.toWei(20000000) },
+        {
+          name: 'holder1',
+          account: addressSitHolder1,
+          amount: web3.toWei(10000000),
+        },
+        {
+          name: 'holder2',
+          account: addressSitHolder2,
+          amount: web3.toWei(20000000),
+        },
       ]
 
       sitHolders.forEach(test => {
@@ -91,14 +119,14 @@ contract('Mothership tokens contribution', function(accounts) {
       it('stop generate tokens if supply cap reached', async function() {
         await assertFail(async function() {
           const totalSupply = await sit.totalSupply()
-          await sit.mint(sitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
+          await sit.mint(addressSitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
         }, 'generating over the total supply cap should throw an error')
       })
       */
 
       it('not transferable', async function() {
         const amount = web3.toWei(1000)
-        const balance = await sit.balanceOf(sitHolder1)
+        const balance = await sit.balanceOf(addressSitHolder1)
         assert.isAtLeast(
           balance.toNumber(),
           amount,
@@ -106,8 +134,8 @@ contract('Mothership tokens contribution', function(accounts) {
         )
 
         await assertFail(async function() {
-          await sit.transfer(sitHolder2, amount, {
-            from: sitHolder1,
+          await sit.transfer(addressSitHolder2, amount, {
+            from: addressSitHolder1,
           })
         }, 'transfer is not allowed')
       })
