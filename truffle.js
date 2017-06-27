@@ -13,6 +13,11 @@ const providerKovan = new HDWalletProvider(
   'https://kovan.infura.io',
   0,
 )
+const providerMain = new HDWalletProvider(
+  process.env.MAIN_MNEMONIC,
+  'http://localhost:8545',
+  0,
+)
 
 module.exports = {
   networks: {
@@ -20,6 +25,12 @@ module.exports = {
       network_id: 15,
       host: 'localhost',
       port: 8545,
+      gas: 4000000,
+      gasPrice: 20e9,
+    },
+    main: {
+      network_id: 1,
+      provider: providerMain,
       gas: 4000000,
       gasPrice: 20e9,
     },
