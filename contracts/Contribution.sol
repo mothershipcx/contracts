@@ -246,7 +246,7 @@ contract Contribution is Controlled, TokenController {
   ///  controller.
   function finalize() public initialized {
     require(getBlockNumber() >= startBlock);
-    require(msg.sender == controller || getBlockNumber() > endBlock);
+    require(msg.sender == controller || getBlockNumber() > endBlock || tokensForSale() == 0);
     require(finalizedBlock == 0);
 
     finalizedBlock = getBlockNumber();
