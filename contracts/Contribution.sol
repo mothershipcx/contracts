@@ -51,6 +51,8 @@ contract Contribution is Controlled, TokenController {
   uint256 public finalizedBlock;
   uint256 public finalizedTime;
 
+  uint256 public minimum_investment;
+
   mapping (address => uint256) public lastCallBlock;
 
   bool public paused;
@@ -143,6 +145,12 @@ contract Contribution is Controlled, TokenController {
     totalSupplyCap = _totalSupplyCap;
   }
 
+  function setMinimumInvestment(
+      uint _minimum_investment
+  ) public onlyController {
+    minimum_investment = _minimum_investment;
+  }
+
   /// @notice If anybody sends Ether directly to this contract, consider he is
   ///  getting MSPs.
   function () public payable notPaused {
@@ -174,6 +182,7 @@ contract Contribution is Controlled, TokenController {
 
   function doBuy(address _th) internal {
     require(tx.gasprice <= maxGasPrice);
+    require(msg.value >= minimum_investment);
 
     // Antispam mechanism
     address caller;
