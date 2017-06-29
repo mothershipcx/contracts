@@ -47,6 +47,7 @@ contract Contribution is Controlled, TokenController {
   address public destEthDevs;
   address public destTokensSit;
   address public destTokensTeam;
+  address public destTokensReferals;
 
   address public mspController;
 
@@ -92,6 +93,7 @@ contract Contribution is Controlled, TokenController {
   /// @param _destTokensSit Address of the exchanger SIT-MSP where the MSP are sent
   ///  to be distributed to the SIT holders.
   /// @param _destTokensTeam Address where the tokens for the team are sent
+  /// @param _destTokensReferals Address where the tokens for the referal system are sent
   /// @param _sit Address of the SIT token contract
   function initialize(
       address _msp,
@@ -106,6 +108,7 @@ contract Contribution is Controlled, TokenController {
       address _destEthDevs,
       address _destTokensSit,
       address _destTokensTeam,
+      address _destTokensReferals,
 
       address _sit
   ) public onlyController {
@@ -136,6 +139,9 @@ contract Contribution is Controlled, TokenController {
 
     require(_destTokensTeam != 0x0);
     destTokensTeam = _destTokensTeam;
+
+    require(_destTokensReferals != 0x0);
+    destTokensReferals = _destTokensReferals;
 
     require(_sit != 0x0);
     SIT = MiniMeToken(_sit);
@@ -252,9 +258,20 @@ contract Contribution is Controlled, TokenController {
     finalizedBlock = getBlockNumber();
     finalizedTime = now;
 
-    // TODO generate 5% for the team
-    // TODO generate 5% for the referal bonuses
-    // TODO generate 20% for SIT holder
+    // Generate 5% for the team
+    assert(MSP.generateTokens(
+      destTokensTeam,
+      percent(5).mul(totalSupplyCap).div(percent(100))));
+
+    // Generate 5% for the referal bonuses
+    assert(MSP.generateTokens(
+      destTokensReferals,
+      percent(5).mul(totalSupplyCap).div(percent(100))));
+
+    // Generate tokens for SIT exchanger
+    assert(MSP.generateTokens(
+      destTokensSit,
+      SIT.totalSupply()));
 
     MSP.changeController(mspController);
     Finalized();

@@ -36,6 +36,8 @@ contract('Mothership tokens contribution', function(accounts) {
     multisigMothership = await MultiSigWallet.new([addressMothership], 1)
     multisigCommunity = await MultiSigWallet.new([addressCommunity], 1)
     multisigTeam = await MultiSigWallet.new([addressTeam], 1)
+    // TODO create a referal bonuses withdrawal contract instead
+    multisigReferals = await MultiSigWallet.new([addressTeam], 1)
 
     miniMeTokenFactory = await MiniMeTokenFactory.new()
     sit = await SIT.new(miniMeTokenFactory.address)
@@ -62,6 +64,10 @@ contract('Mothership tokens contribution', function(accounts) {
     )
 
     await msp.changeController(contribution.address)
+
+    // Generate some SIT tokens before initializeing the contribution
+    assert.isOk(await sit.generateTokens(addressSitHolder1, web3.toWei(1000)))
+
     await contribution.initialize(
       msp.address,
       mspPlaceholder.address,
@@ -72,92 +78,9 @@ contract('Mothership tokens contribution', function(accounts) {
       contributionWallet.address,
       sitExchanger.address,
       multisigTeam.address,
+      multisigReferals.address, // TODO referal bonuses contract
       sit.address,
     )
-  })
-
-  describe('SIT', function() {
-    it('total supply', async function() {
-      assert.equal(
-        await sit.totalSupply(),
-        0,
-        'SIT initial total supply should be 0',
-      )
-    })
-
-    it('nobody can buy', async function() {
-      await assertFail(async function() {
-        await sit.send(web3.toWei(1))
-      })
-    })
-
-    describe('generate tokens', function() {
-      const sitHolders = [
-        {
-          name: 'holder1',
-          account: addressSitHolder1,
-          amount: web3.toWei(10000000),
-        },
-        {
-          name: 'holder2',
-          account: addressSitHolder2,
-          amount: web3.toWei(20000000),
-        },
-      ]
-
-      sitHolders.forEach(test => {
-        it(`could generate SIT token for ${test.name}`, async function() {
-          const totalSupply = await sit.totalSupply()
-
-          assert.equal(
-            await sit.balanceOf(test.account),
-            0,
-            `Initial SIT balance for account ${test.name} should be 0`,
-          )
-
-          assert.isOk(
-            await sit.generateTokens(test.account, test.amount),
-            `SIT tokens should be generated for account ${test.name}`,
-          )
-
-          const balance = await sit.balanceOf(test.account)
-          assert.equal(
-            balance.toNumber(),
-            test.amount,
-            `SIT holder balance for account ${test.name} should be increased`,
-          )
-
-          const newTotalSupply = await sit.totalSupply()
-          assert.equal(
-            newTotalSupply.toNumber(),
-            totalSupply.add(test.amount).toNumber(),
-            `SIT total supply should be increased by ${test.amount} after generating tokens for ${test.name}`,
-          )
-
-          await assertFail(async function() {
-            const res = await sit.generateTokens(test.account, 1, {
-              from: test.account,
-            })
-          }, `account ${test.name} could not generate SIT to itself`)
-        })
-      })
-
-      it('not transferable', async function() {
-        const amount = web3.toWei(1000)
-        const balance = await sit.balanceOf(addressSitHolder1)
-        assert.isAtLeast(
-          balance.toNumber(),
-          amount,
-          'SIT holder should have enough tokens to transfer',
-        )
-
-        await assertFail(async function() {
-          await sit.transfer(addressSitHolder2, amount, {
-            from: addressSitHolder1,
-          })
-        }, 'transfer is not allowed')
-      })
-    })
   })
 
   it('MSP total supply and contribution limits', async function() {
@@ -208,5 +131,33 @@ contract('Mothership tokens contribution', function(accounts) {
         gasPrice: '20000000000',
       })
     }, 'Should not allow to buy over the sale total cap')
+  })
+
+  it('Finalize, check balances', async function() {
+    const _totalSold = await contribution.totalSold()
+    assert.isAbove(_totalSold.toNumber(), 0)
+
+    await contribution.setMockedBlockNumber(endBlock + 1)
+    await contribution.finalize()
+
+    const _cap = await contribution.totalSupplyCap()
+
+    const _sitTotalSupply = await sit.totalSupply()
+    assert.isAbove(_sitTotalSupply.toNumber(), 0)
+    const _balanceSIT = await msp.balanceOf(sitExchanger.address)
+    assert.ok(_balanceSIT.equals(_sitTotalSupply))
+
+    const _balanceTeam = await msp.balanceOf(multisigTeam.address)
+    assert.ok(_balanceTeam.equals(_cap.mul(0.05)))
+
+    const _balanceReferals = await msp.balanceOf(multisigReferals.address)
+    assert.ok(_balanceReferals.equals(_cap.mul(0.05)))
+
+    const _mspTotalSupply = await msp.totalSupply()
+    assert.ok(
+      _mspTotalSupply.equals(
+        _totalSold.plus(_balanceSIT).plus(_balanceTeam).plus(_balanceReferals),
+      ),
+    )
   })
 })
