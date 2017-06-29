@@ -1,8 +1,8 @@
 pragma solidity ^0.4.11;
 
 import "./interface/ERC20Token.sol";
+import "./interface/MiniMeTokenI.sol";
 import "./interface/TokenController.sol";
-import "./interface/Controlled.sol";
 import "./interface/ApproveAndCallReceiver.sol";
 
 /*
@@ -24,13 +24,7 @@ import "./interface/ApproveAndCallReceiver.sol";
 /// @dev The actual token contract, the default controller is the msg.sender
 ///  that deploys the contract, so usually this token will be deployed by a
 ///  token controller contract, which Giveth will call a "Campaign"
-contract MiniMeToken is Controlled {
-
-    string public name;                //The Token's name: e.g. DigixDAO Tokens
-    uint8 public decimals;             //Number of decimals of the smallest unit
-    string public symbol;              //An identifier: e.g. REP
-    string public version = 'MMT_0.1'; //An arbitrary versioning scheme
-
+contract MiniMeToken is MiniMeTokenI {
 
     /// @dev `Checkpoint` is the structure that attaches a block number to a
     ///  given value, the block number attached is the one that last changed the
