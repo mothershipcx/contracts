@@ -133,6 +133,21 @@ contract('Mothership tokens contribution', function(accounts) {
     }, 'Should not allow to buy over the sale total cap')
   })
 
+  it("won't generate tokens for payments bellow the minimum_investment", async function() {
+    await contribution.setMinimumInvestment(web3.toWei(20000000))
+    assert.equal(
+      (await contribution.minimum_investment()).toNumber(),
+      web3.toWei(20000000),
+    )
+
+    await assertFail(async function() {
+      await contribution.proxyPayment(addressSitHolder1, {
+        from: addressSitHolder1,
+        value: web3.toWei(10000000),
+      })
+    })
+  })
+
   it('Finalize, check balances', async function() {
     const _totalSold = await contribution.totalSold()
     assert.isAbove(_totalSold.toNumber(), 0)

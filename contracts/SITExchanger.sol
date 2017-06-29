@@ -30,7 +30,7 @@ pragma solidity ^0.4.11;
 import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
 import "./interface/ERC20Token.sol";
-import "./MiniMeToken.sol";
+import "./interface/MiniMeTokenI.sol";
 import "./Contribution.sol";
 
 contract SITExchanger is Controlled, TokenController {
@@ -38,13 +38,13 @@ contract SITExchanger is Controlled, TokenController {
 
   mapping (address => uint256) public collected;
   uint256 public totalCollected;
-  MiniMeToken public sit;
-  MiniMeToken public msp;
+  MiniMeTokenI public sit;
+  MiniMeTokenI public msp;
   Contribution public contribution;
 
   function SITExchanger(address _sit, address _msp, address _contribution) {
-    sit = MiniMeToken(_sit);
-    msp = MiniMeToken(_msp);
+    sit = MiniMeTokenI(_sit);
+    msp = MiniMeTokenI(_msp);
     contribution = Contribution(_contribution);
   }
 

@@ -3,9 +3,7 @@ pragma solidity ^0.4.11;
 import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
 import "./interface/TokenController.sol";
-import "./SIT.sol";
-import "./MSP.sol";
-
+import "./interface/MiniMeTokenI.sol";
 
 /*
   Copyright 2017, Anton Egorov (Mothership Foundation)
@@ -39,8 +37,9 @@ contract Contribution is Controlled, TokenController {
   uint256 public totalSold; // How much tokens sold
   uint256 public totalSaleSupplyCap; // Token sale cap
 
-  MiniMeToken public SIT;
-  MiniMeToken public MSP;
+  MiniMeTokenI public sit;
+  MiniMeTokenI public msp;
+
   uint256 public startBlock;
   uint256 public endBlock;
 
@@ -54,12 +53,14 @@ contract Contribution is Controlled, TokenController {
   uint256 public finalizedBlock;
   uint256 public finalizedTime;
 
+  uint256 public minimum_investment;
+
   mapping (address => uint256) public lastCallBlock;
 
   bool public paused;
 
   modifier initialized() {
-    require(address(MSP) != 0x0);
+    require(address(msp) != 0x0);
     _;
   }
 
@@ -67,7 +68,7 @@ contract Contribution is Controlled, TokenController {
     require(getBlockNumber() >= startBlock &&
             getBlockNumber() <= endBlock &&
             finalizedBlock == 0 &&
-            address(MSP) != 0x0);
+            address(msp) != 0x0);
     _;
   }
 
@@ -77,6 +78,7 @@ contract Contribution is Controlled, TokenController {
   }
 
   function Contribution() {
+    // Booleans are false by default consider removing this
     paused = false;
   }
 
@@ -113,12 +115,12 @@ contract Contribution is Controlled, TokenController {
       address _sit
   ) public onlyController {
     // Initialize only once
-    require(address(MSP) == 0x0);
+    require(address(msp) == 0x0);
 
-    MSP = MiniMeToken(_msp);
-    require(MSP.totalSupply() == 0);
-    require(MSP.controller() == address(this));
-    require(MSP.decimals() == 18);  // Same amount of decimals as ETH
+    msp = MiniMeTokenI(_msp);
+    require(msp.totalSupply() == 0);
+    require(msp.controller() == address(this));
+    require(msp.decimals() == 18);  // Same amount of decimals as ETH
 
     require(_mspController != 0x0);
     mspController = _mspController;
@@ -144,14 +146,20 @@ contract Contribution is Controlled, TokenController {
     destTokensReferals = _destTokensReferals;
 
     require(_sit != 0x0);
-    SIT = MiniMeToken(_sit);
+    sit = MiniMeTokenI(_sit);
 
     // SIT amount should be no more than 20% of MSP total supply cap
-    require(MiniMeToken(SIT).totalSupply() * 5 <= _totalSupplyCap);
+    require(MiniMeTokenI(sit).totalSupply() * 5 <= _totalSupplyCap);
     totalSupplyCap = _totalSupplyCap;
 
     // We are going to sale 70% of total supply cap
     totalSaleSupplyCap = percent(70).mul(_totalSupplyCap).div(percent(100));
+  }
+
+  function setMinimumInvestment(
+      uint _minimum_investment
+  ) public onlyController {
+    minimum_investment = _minimum_investment;
   }
 
   /// @notice If anybody sends Ether directly to this contract, consider he is
@@ -185,10 +193,11 @@ contract Contribution is Controlled, TokenController {
 
   function doBuy(address _th) internal {
     require(tx.gasprice <= maxGasPrice);
+    require(msg.value >= minimum_investment);
 
     // Antispam mechanism
     address caller;
-    if (msg.sender == address(MSP)) {
+    if (msg.sender == address(msp)) {
       caller = _th;
     } else {
       caller = msg.sender;
@@ -212,7 +221,7 @@ contract Contribution is Controlled, TokenController {
           toFund = leftForSale.div(exchangeRate);
         }
 
-        assert(MSP.generateTokens(_th, tokensGenerated));
+        assert(msp.generateTokens(_th, tokensGenerated));
         totalSold = totalSold.add(tokensGenerated);
         destEthDevs.transfer(toFund);
         NewSale(_th, toFund, tokensGenerated);
@@ -226,7 +235,7 @@ contract Contribution is Controlled, TokenController {
       // If the call comes from the Token controller,
       // then we return it to the token Holder.
       // Otherwise we return to the sender.
-      if (msg.sender == address(MSP)) {
+      if (msg.sender == address(msp)) {
         _th.transfer(toReturn);
       } else {
         msg.sender.transfer(toReturn);
@@ -259,21 +268,21 @@ contract Contribution is Controlled, TokenController {
     finalizedTime = now;
 
     // Generate 5% for the team
-    assert(MSP.generateTokens(
+    assert(msp.generateTokens(
       destTokensTeam,
       percent(5).mul(totalSupplyCap).div(percent(100))));
 
     // Generate 5% for the referal bonuses
-    assert(MSP.generateTokens(
+    assert(msp.generateTokens(
       destTokensReferals,
       percent(5).mul(totalSupplyCap).div(percent(100))));
 
     // Generate tokens for SIT exchanger
-    assert(MSP.generateTokens(
+    assert(msp.generateTokens(
       destTokensSit,
-      SIT.totalSupply()));
+      sit.totalSupply()));
 
-    MSP.changeController(mspController);
+    msp.changeController(mspController);
     Finalized();
   }
 
@@ -288,7 +297,7 @@ contract Contribution is Controlled, TokenController {
 
   /// @return Total tokens issued in weis.
   function tokensIssued() public constant returns (uint256) {
-    return MSP.totalSupply();
+    return msp.totalSupply();
   }
 
   /// @return Total tokens availale for the sale in weis.
@@ -316,8 +325,8 @@ contract Contribution is Controlled, TokenController {
   /// @param _token The address of the token contract that you want to recover
   ///  set to 0 in case you want to extract ether.
   function claimTokens(address _token) public onlyController {
-    if (MSP.controller() == address(this)) {
-      MSP.claimTokens(_token);
+    if (msp.controller() == address(this)) {
+      msp.claimTokens(_token);
     }
     if (_token == 0x0) {
       controller.transfer(this.balance);
