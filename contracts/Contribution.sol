@@ -230,6 +230,30 @@ contract Contribution is Controlled, TokenController {
     return (size > 0);
   }
 
+  /// @notice This method will can be called by the controller before the contribution period
+  ///  end or by anybody after the `endBlock`. This method finalizes the contribution period
+  ///  by creating the remaining tokens and transferring the controller to the configured
+  ///  controller.
+  function finalize() public initialized {
+    require(getBlockNumber() >= startBlock);
+    require(msg.sender == controller || getBlockNumber() > endBlock);
+    require(finalizedBlock == 0);
+
+    finalizedBlock = getBlockNumber();
+    finalizedTime = now;
+
+    // TODO generate 5% for the team
+    // TODO generate 5% for the referal bonuses
+    // TODO generate 20% for SIT holder
+
+    MSP.changeController(mspController);
+    Finalized();
+  }
+
+  function percent(uint256 p) internal returns (uint256) {
+    return p.mul(10**16);
+  }
+
 
   //////////
   // Constant functions
