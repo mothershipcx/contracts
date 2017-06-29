@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import "zeppelin-solidity/contracts/SafeMath.sol";
+import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
 import "./interface/TokenController.sol";
 import "./SIT.sol";

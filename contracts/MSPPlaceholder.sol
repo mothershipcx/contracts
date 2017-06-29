@@ -27,7 +27,7 @@ pragma solidity ^0.4.11;
 ///  asks it to do so.
 
 
-import "zeppelin-solidity/contracts/SafeMath.sol";
+import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
 import "./interface/ERC20Token.sol";
 import "./MiniMeToken.sol";

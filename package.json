@@ -4,8 +4,7 @@
   "description": "Mothership Token Sale Smart contracts",
   "main": "index.js",
   "dependencies": {
-    "truffle-hdwallet-provider": "^0.0.3",
-    "zeppelin-solidity": "^1.0.7"
+    "truffle-hdwallet-provider": "^0.0.3"
   },
   "devDependencies": {
     "ethereumjs-testrpc": "^3.0.5",
