@@ -29,16 +29,18 @@ pragma solidity ^0.4.11;
 
 import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
+import "./interface/TokenController.sol";
 import "./interface/ERC20Token.sol";
-import "./MiniMeToken.sol";
+import "./interface/MiniMeTokenI.sol";
 import "./Contribution.sol";
 
 
 contract MSPPlaceHolder is Controlled, TokenController {
   using SafeMath for uint256;
 
-  MiniMeToken public msp;
+  MiniMeTokenI public msp;
   Contribution public contribution;
+
   uint256 public activationTime;
   address public sitExchanger;
 
@@ -50,7 +52,7 @@ contract MSPPlaceHolder is Controlled, TokenController {
   ///  only this exchanger will be able to move tokens)
   function MSPPlaceHolder(address _controller, address _msp, address _contribution, address _sitExchanger) {
     controller = _controller;
-    msp = MiniMeToken(_msp);
+    msp = MiniMeTokenI(_msp);
     contribution = Contribution(_contribution);
     sitExchanger = _sitExchanger;
   }
@@ -100,7 +102,7 @@ contract MSPPlaceHolder is Controlled, TokenController {
   // Testing specific methods
   //////////
 
-  /// @notice This function is overrided by the test Mocks.
+  /// @notice This function is overridden by the test Mocks.
   function getTime() internal returns (uint256) {
     return now;
   }
