@@ -34,8 +34,10 @@ contract Contribution is Controlled, TokenController {
   uint256 constant public maxGasPrice = 50000000000;
   uint256 constant public maxCallFrequency = 100;
 
-  uint256 public totalSupplyCap;
-  uint256 public exchangeRate;
+  uint256 public totalSupplyCap; // Total MSP supply to be generated
+  uint256 public exchangeRate; // ETH-MSP exchange rate
+  uint256 public totalSold; // How much tokens sold
+  uint256 public totalSaleSupplyCap; // Token sale cap
 
   MiniMeToken public SIT;
   MiniMeToken public MSP;
@@ -141,6 +143,9 @@ contract Contribution is Controlled, TokenController {
     // SIT amount should be no more than 20% of MSP total supply cap
     require(MiniMeToken(SIT).totalSupply() * 5 <= _totalSupplyCap);
     totalSupplyCap = _totalSupplyCap;
+
+    // We are going to sale 70% of total supply cap
+    totalSaleSupplyCap = percent(70).mul(_totalSupplyCap).div(percent(100));
   }
 
   /// @notice If anybody sends Ether directly to this contract, consider he is
@@ -190,19 +195,24 @@ contract Contribution is Controlled, TokenController {
     lastCallBlock[caller] = getBlockNumber();
 
     uint256 toFund = msg.value;
+    uint256 leftForSale = tokensForSale();
     if (toFund > 0) {
-      uint256 tokensGenerated = toFund.mul(exchangeRate);
+      if (leftForSale > 0) {
+        uint256 tokensGenerated = toFund.mul(exchangeRate);
 
-      // Check total supply cap reached
-      uint256 newTotalSupply = tokensGenerated.add(MSP.totalSupply());
-      if (newTotalSupply > totalSupplyCap) {
-        tokensGenerated = tokensGenerated.sub(newTotalSupply.sub(totalSupplyCap));
-        toFund = tokensGenerated.div(exchangeRate);
+        // Check total supply cap reached, sell the all remaining tokens
+        if (tokensGenerated > leftForSale) {
+          tokensGenerated = leftForSale;
+          toFund = leftForSale.div(exchangeRate);
+        }
+
+        assert(MSP.generateTokens(_th, tokensGenerated));
+        totalSold = totalSold.add(tokensGenerated);
+        destEthDevs.transfer(toFund);
+        NewSale(_th, toFund, tokensGenerated);
+      } else {
+        toFund = 0;
       }
-
-      assert(MSP.generateTokens(_th, tokensGenerated));
-      destEthDevs.transfer(toFund);
-      NewSale(_th, toFund, tokensGenerated);
     }
 
     uint256 toReturn = msg.value.sub(toFund);
@@ -262,6 +272,11 @@ contract Contribution is Controlled, TokenController {
   /// @return Total tokens issued in weis.
   function tokensIssued() public constant returns (uint256) {
     return MSP.totalSupply();
+  }
+
+  /// @return Total tokens availale for the sale in weis.
+  function tokensForSale() public constant returns(uint256) {
+    return totalSaleSupplyCap > totalSold ? totalSaleSupplyCap - totalSold : 0;
   }
 
 

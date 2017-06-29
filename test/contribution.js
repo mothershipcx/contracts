@@ -1,3 +1,5 @@
+const BigNumber = require('bignumber.js')
+
 const MultiSigWallet = artifacts.require('MultiSigWallet')
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
 const SIT = artifacts.require('SITMock')
@@ -27,7 +29,7 @@ contract('Mothership tokens contribution', function(accounts) {
 
   const startBlock = 1000000
   const endBlock = 1040000
-  const totalSupply = 200000000
+  const totalSupply = new BigNumber(web3.toWei(200000000))
   const exchangeRate = 5000
 
   it('Deploys all contracts', async function() {
@@ -81,13 +83,6 @@ contract('Mothership tokens contribution', function(accounts) {
         0,
         'SIT initial total supply should be 0',
       )
-      /*
-      assert.equal(
-        await sit.totalSupplyCap(),
-        SIT_TOTAL_SUPPLY_CAP,
-        `SIT total supply should be ${SIT_TOTAL_SUPPLY_CAP}`,
-      )
-      */
     })
 
     it('nobody can buy', async function() {
@@ -147,15 +142,6 @@ contract('Mothership tokens contribution', function(accounts) {
         })
       })
 
-      /*
-      it('stop generate tokens if supply cap reached', async function() {
-        await assertFail(async function() {
-          const totalSupply = await sit.totalSupply()
-          await sit.mint(addressSitHolder1, SIT_TOTAL_SUPPLY_CAP - totalSupply + 1)
-        }, 'generating over the total supply cap should throw an error')
-      })
-      */
-
       it('not transferable', async function() {
         const amount = web3.toWei(1000)
         const balance = await sit.balanceOf(addressSitHolder1)
@@ -174,20 +160,53 @@ contract('Mothership tokens contribution', function(accounts) {
     })
   })
 
-  describe('MSP', function() {
-    it('total supply', async function() {
-      assert.equal(
-        await msp.totalSupply(),
-        0,
-        'MSP initial total supply should be 0',
-      )
-      /*
-      assert.equal(
-        await msp.totalSupplyCap(),
-        MSP_TOTAL_SUPPLY_CAP,
-        `MSP total supply should be ${MSP_TOTAL_SUPPLY_CAP}`,
-      )
-      */
+  it('MSP total supply and contribution limits', async function() {
+    assert.equal(
+      await msp.totalSupply(),
+      0,
+      'MSP initial total supply should be 0',
+    )
+    const _totalSupply = await contribution.totalSupplyCap()
+    assert.isAbove(_totalSupply.toNumber(), 0)
+    assert.ok(
+      _totalSupply.equals(totalSupply),
+      `MSP contribution total supply cap should be ${totalSupply}`,
+    )
+    const _totalSaleSupply = await contribution.totalSaleSupplyCap()
+    assert.ok(
+      _totalSaleSupply.equals(totalSupply.times(70).dividedBy(100)),
+      `MSP contribution total sale supply cap should be 70% of total supply, got ${_totalSaleSupply.toNumber()}`,
+    )
+  })
+
+  it('Check buying tokens, aware for oversale', async function() {
+    await contribution.setMockedBlockNumber(1005000)
+    await sit.setMockedBlockNumber(1005000)
+    await msp.setMockedBlockNumber(1005000)
+
+    // Buy some tokens
+    await msp.sendTransaction({
+      value: web3.toWei(5),
+      gas: 300000,
+      gasPrice: '20000000000',
     })
+
+    // Buying tokens should affect total supply counters
+    const _totalSupply = await msp.totalSupply()
+    const _totalSold = await contribution.totalSold()
+    assert.isAbove(_totalSupply.toNumber(), 0)
+    assert.isAbove(_totalSold.toNumber(), 0)
+    assert.ok(_totalSupply.equals(_totalSold))
+
+    // Try to oversale
+    const _cap = await contribution.totalSaleSupplyCap()
+    const _amount = _cap.minus(web3.toWei(5)).plus(1)
+    await assertFail(async function() {
+      await msp.sendTransaction({
+        value: _amount,
+        gas: 300000,
+        gasPrice: '20000000000',
+      })
+    }, 'Should not allow to buy over the sale total cap')
   })
 })
