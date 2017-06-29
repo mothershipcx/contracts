@@ -73,7 +73,7 @@ contract Contribution is Controlled, TokenController {
     _;
   }
 
-  function MothershipContribution() {
+  function Contribution() {
     paused = false;
   }
 
