@@ -9987,7 +9987,7 @@ truffle-expect@0.0.3, truffle-expect@^0.0.3, truffle-expect@~0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/truffle-expect/-/truffle-expect-0.0.3.tgz#9b75cef343bd596e7e5dbc878f5f1b2e318a944c"
 
-truffle-hdwallet-provider@0.0.3, truffle-hdwallet-provider@^0.0.3:
+truffle-hdwallet-provider@^0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/truffle-hdwallet-provider/-/truffle-hdwallet-provider-0.0.3.tgz#0e1de02104b73d3875e1cf7093305b4ea8a2d843"
   dependencies:
@@ -11021,12 +11021,6 @@ yauzl@^2.4.2:
 yeast@0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/yeast/-/yeast-0.1.2.tgz#008e06d8094320c372dbc2f8ed76a0ca6c8ac419"
-
-zeppelin-solidity@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/zeppelin-solidity/-/zeppelin-solidity-1.0.7.tgz#7602040da3a08d9d6cab08bf9cacc60c4f60321a"
-  dependencies:
-    truffle-hdwallet-provider "0.0.3"
 
 zip-stream@^1.1.0:
   version "1.2.0"
