@@ -4,7 +4,9 @@ const MSP = artifacts.require('MSP')
 
 const addressSIT = ''
 
-module.exports = async function(deployer) {
+module.exports = async function(deployer, network) {
+  if (network === 'development') return // Don't deploy on tests
+
   // MiniMeTokenFactory send
   const miniMeTokenFactoryFuture = MiniMeTokenFactory.new()
 
