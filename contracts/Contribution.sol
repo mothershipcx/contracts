@@ -54,6 +54,7 @@ contract Contribution is Controlled, TokenController {
   uint256 public finalizedTime;
 
   uint256 public minimum_investment;
+  uint256 public minimum_goal;
 
   mapping (address => uint256) public lastCallBlock;
 
@@ -103,6 +104,7 @@ contract Contribution is Controlled, TokenController {
 
       uint256 _totalSupplyCap,
       uint256 _exchangeRate,
+      uint256 _minimum_goal,
 
       uint256 _startBlock,
       uint256 _endBlock,
@@ -154,6 +156,8 @@ contract Contribution is Controlled, TokenController {
 
     // We are going to sale 70% of total supply cap
     totalSaleSupplyCap = percent(70).mul(_totalSupplyCap).div(percent(100));
+
+    minimum_goal = _minimum_goal;
   }
 
   function setMinimumInvestment(
@@ -261,6 +265,7 @@ contract Contribution is Controlled, TokenController {
   ///  controller.
   function finalize() public initialized {
     require(getBlockNumber() >= startBlock);
+    require(sit.totalSupply().add(totalSold) >= minimum_goal);
     require(msg.sender == controller || getBlockNumber() > endBlock || tokensForSale() == 0);
     require(finalizedBlock == 0);
 
