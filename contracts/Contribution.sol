@@ -4,6 +4,7 @@ import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
 import "./interface/TokenController.sol";
 import "./interface/MiniMeTokenI.sol";
+import "./interface/Finalizable.sol";
 
 /*
   Copyright 2017, Anton Egorov (Mothership Foundation)
@@ -26,7 +27,7 @@ import "./interface/MiniMeTokenI.sol";
   Original contract is https://github.com/status-im/status-network-token/blob/master/contracts/StatusContribution.sol
 */
 
-contract Contribution is Controlled, TokenController {
+contract Contribution is Controlled, TokenController, Finalizable {
   using SafeMath for uint256;
 
   uint256 constant public maxGasPrice = 50000000000;
@@ -257,6 +258,10 @@ contract Contribution is Controlled, TokenController {
       size := extcodesize(_addr)
     }
     return (size > 0);
+  }
+
+  function finalized() public returns (bool) {
+    finalizedBlock != 0;
   }
 
   /// @notice This method will can be called by the controller before the contribution period

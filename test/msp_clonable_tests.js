@@ -14,7 +14,7 @@ contract("MSP", function(accounts) {
   });
 
   it("A cloned Token will keep the original Token's transaction history", async () => {
-    msp.transfer(accounts[1], 50000000000000000000);
+    await msp.transfer(accounts[1], 50000000000000000000);
 
     assert.equal(
       (await msp.balanceOf.call(accounts[0])).toNumber(),
@@ -64,7 +64,7 @@ contract("MSP", function(accounts) {
   });
 
   it("A cloned Token can be cloned whithout the calling createCloneToken", async () => {
-    msp.transfer(accounts[1], 50000000000000000000);
+    await msp.transfer(accounts[1], 50000000000000000000);
 
     assert.equal(
       (await msp.balanceOf.call(accounts[0])).toNumber(),
