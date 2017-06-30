@@ -55,7 +55,7 @@ contract SITExchanger is Controlled, TokenController {
     require(getBlockNumber() > contribution.startBlock());
 
     // Get current MSP ballance
-    uint256 balance = sit.balanceOf(msg.sender);
+    uint256 balance = sit.balanceOfAt(msg.sender, contribution.finalizedBlock());
 
     // And then subtract the amount already collected
     uint256 amount = balance.sub(collected[msg.sender]);
