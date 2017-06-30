@@ -51,6 +51,7 @@ contract Contribution is Controlled, TokenController {
   address public mspController;
 
   uint256 public finalizedBlock;
+  uint256 public initializedBlock;
   uint256 public finalizedTime;
 
   uint256 public minimum_investment;
@@ -158,6 +159,7 @@ contract Contribution is Controlled, TokenController {
     totalSaleSupplyCap = percent(70).mul(_totalSupplyCap).div(percent(100));
 
     minimum_goal = _minimum_goal;
+    initializedBlock = getBlockNumber();
   }
 
   function setMinimumInvestment(
