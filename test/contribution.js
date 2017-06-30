@@ -31,6 +31,7 @@ contract('Mothership tokens contribution', function(accounts) {
   const endBlock = 1040000
   const totalSupply = new BigNumber(web3.toWei(200000000))
   const exchangeRate = 5000
+  const minimumGoal = 10
 
   it('Deploys all contracts', async function() {
     multisigMothership = await MultiSigWallet.new([addressMothership], 1)
@@ -73,6 +74,7 @@ contract('Mothership tokens contribution', function(accounts) {
       mspPlaceholder.address,
       totalSupply,
       exchangeRate,
+      minimumGoal,
       startBlock,
       endBlock,
       contributionWallet.address,
