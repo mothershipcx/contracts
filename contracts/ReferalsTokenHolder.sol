@@ -13,12 +13,8 @@ contract ReferalsTokenHolder is Controlled {
     msp = MiniMeTokenI(_msp);
   }
 
-  event Log(bool s);
-
   function spread(address[] _addresses, uint256[] _amounts) public onlyController {
-    Log(Finalizable(msp.controller()).finalized());
     require(Finalizable(msp.controller()).finalized());
-    Log(_addresses.length == _amounts.length);
     require(_addresses.length == _amounts.length);
 
     for (uint256 i = 0; i < _addresses.length; i++) {
