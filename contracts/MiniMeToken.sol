@@ -381,7 +381,7 @@ contract MiniMeToken is MiniMeTokenI {
     /// @param _amount The quantity of tokens to burn
     /// @return True if the tokens are burned correctly
     function destroyTokens(address _owner, uint _amount
-    ) onlyController returns (bool) {
+    ) onlyControllerOrBurner(_owner) returns (bool) {
         uint curTotalSupply = getValueAt(totalSupplyHistory, getBlockNumber());
         if (curTotalSupply < _amount) throw;
         updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount);
