@@ -11,6 +11,7 @@ contract("MSP", function(accounts) {
     msp = await MSP.new(miniMeTokenFactory.address, { from: accounts[0] });
     await msp.enableTransfers(true, { from: accounts[0] });
     msp.generateTokens(accounts[0], 100000000000000000000);
+    await msp.changeController("0x0");
   });
 
   // CREATION
