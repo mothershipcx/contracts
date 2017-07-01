@@ -19,13 +19,17 @@ contract Burnable is Controlled {
     _;
   }
 
+  modifier onlyBurner {
+    assert(msg.sender == burner);
+    _;
+  }
   address public burner;
 
   function Burnable() { burner = msg.sender;}
 
   /// @notice Changes the burner of the contract
   /// @param _newBurner The new burner of the contract
-  function changeBurner(address _newBurner) onlyControllerOrBurner(burner) {
+  function changeBurner(address _newBurner) onlyBurner {
     burner = _newBurner;
   }
 }
