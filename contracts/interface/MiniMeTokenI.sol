@@ -1,9 +1,9 @@
 pragma solidity ^0.4.11;
 
 import "./ERC20Token.sol";
-import "./Controlled.sol";
+import "./Burnable.sol";
 
-contract MiniMeTokenI is ERC20Token, Controlled {
+contract MiniMeTokenI is ERC20Token, Burnable {
 
       string public name;                //The Token's name: e.g. DigixDAO Tokens
       uint8 public decimals;             //Number of decimals of the smallest unit
