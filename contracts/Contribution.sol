@@ -51,7 +51,6 @@ contract Contribution is Controlled, TokenController, Finalizable {
 
   address public mspController;
 
-  uint256 public finalizedBlock;
   uint256 public initializedBlock;
   uint256 public finalizedTime;
 
@@ -262,6 +261,10 @@ contract Contribution is Controlled, TokenController, Finalizable {
     return (size > 0);
   }
 
+  function canFinalize() returns (bool) {
+    return sit.totalSupply().add(totalSold) >= minimum_goal;
+  }
+
   function finalized() public returns (bool) {
     finalizedBlock != 0;
   }
@@ -272,7 +275,7 @@ contract Contribution is Controlled, TokenController, Finalizable {
   ///  controller.
   function finalize() public initialized {
     require(getBlockNumber() >= startBlock);
-    require(sit.totalSupply().add(totalSold) >= minimum_goal);
+    require(canFinalize());
     require(msg.sender == controller || getBlockNumber() > endBlock || tokensForSale() == 0);
     require(finalizedBlock == 0);
 

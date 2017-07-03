@@ -10,7 +10,7 @@ contract("MSP", function(accounts) {
     miniMeTokenFactory = await MiniMeTokenFactory.new({ from: accounts[0] });
     msp = await MSP.new(miniMeTokenFactory.address, { from: accounts[0] });
     await msp.enableTransfers(true, { from: accounts[0] });
-    msp.generateTokens(accounts[0], 100000000000000000000);
+    await msp.generateTokens(accounts[0], 100000000000000000000);
   });
 
   it("A cloned Token will keep the original Token's transaction history", async () => {
