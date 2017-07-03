@@ -13,6 +13,10 @@ contract LeanContribution is Finalizable, TokenController {
     msp = MiniMeTokenI(_msp);
   }
 
+  function canFinalize() returns (bool) {
+    return true;
+  }
+
   function finalize() {
     has_finalized = true;
   }

@@ -31,27 +31,24 @@ pragma solidity ^0.4.11;
 // funds back immediately.
 
 
-import "./Contribution.sol";
+import "./interface/Finalizable.sol";
 
 
 contract ContributionWallet {
 
     // Public variables
     address public multisig;
-    uint256 public endBlock;
-    Contribution public contribution;
+    Finalizable public contribution;
 
     // @dev Constructor initializes public variables
     // @param _multisig The address of the multisig that will receive the funds
     // @param _endBlock Block after which the multisig can request the funds
     // @param _contribution Address of the Contribution contract
-    function ContributionWallet(address _multisig, uint256 _endBlock, address _contribution) {
+    function ContributionWallet(address _multisig, address _contribution) {
         require(_multisig != 0x0);
         require(_contribution != 0x0);
-        require(_endBlock != 0 && _endBlock <= 4000000);
         multisig = _multisig;
-        endBlock = _endBlock;
-        contribution = Contribution(_contribution);
+        contribution = Finalizable(_contribution);
     }
 
     // @dev Receive all sent funds without any further logic
@@ -59,10 +56,8 @@ contract ContributionWallet {
 
     // @dev Withdraw function sends all the funds to the wallet if conditions are correct
     function withdraw() public {
-        require(msg.sender == multisig);              // Only the multisig can request it
-        // TODO check for minimal goal instead of end of contribution
-        require(block.number > endBlock ||            // Allow after end block
-                contribution.finalizedBlock() != 0);  // Allow when sale is finalized
+        require(msg.sender == multisig); // Only the multisig can request it
+        require(contribution.canFinalize() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
         multisig.transfer(this.balance);
     }
 

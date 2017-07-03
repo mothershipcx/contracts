@@ -47,8 +47,7 @@ contract('Mothership tokens contribution', function(accounts) {
     contribution = await Contribution.new()
     contributionWallet = await ContributionWallet.new(
       multisigMothership.address,
-      endBlock,
-      contribution.address,
+      contribution.address
     )
 
     sitExchanger = await SITExchanger.new(
