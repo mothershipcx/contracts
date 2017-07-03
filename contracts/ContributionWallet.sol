@@ -56,9 +56,8 @@ contract ContributionWallet {
 
     // @dev Withdraw function sends all the funds to the wallet if conditions are correct
     function withdraw() public {
-        require(msg.sender == multisig);              // Only the multisig can request it
-        // TODO check for minimal goal instead of end of contribution
-        require(contribution.canFinalize() || contribution.finalizedBlock() != 0);  // Allow when sale is finalized
+        require(msg.sender == multisig); // Only the multisig can request it
+        require(contribution.canFinalize() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
         multisig.transfer(this.balance);
     }
 
