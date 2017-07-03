@@ -47,7 +47,8 @@ This report is focused on the following key areas - though this is *not an exhau
 
 ## Findings
 ### Minor
-_No minor defects were found during this audit._
+
+**Gas Usage** - The entirety of the MiniMeToken contract was imported into contracts even if they only used one or two  functions, this consumes more gas for the deployment and execution of the contracts as a whole. We proposed an improvement by implementing an interface for the MiniMeToken contract in commit [8ca2416653e2bd1b87ea2168b988e1bbe6b831d7](https://github.com/mothershipcx/contracts/commit/8ca2416653e2bd1b87ea2168b988e1bbe6b831d7)
 
 ### Moderate
 
