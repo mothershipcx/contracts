@@ -2,6 +2,7 @@ pragma solidity ^0.4.11;
 
 import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
+import "./interface/Refundable.sol";
 import "./interface/TokenController.sol";
 import "./interface/MiniMeTokenI.sol";
 import "./interface/Finalizable.sol";
@@ -151,15 +152,15 @@ contract Contribution is Controlled, TokenController, Finalizable {
     require(_sit != 0x0);
     sit = MiniMeTokenI(_sit);
 
+    initializedBlock = getBlockNumber();
     // SIT amount should be no more than 20% of MSP total supply cap
-    require(MiniMeTokenI(sit).totalSupply() * 5 <= _totalSupplyCap);
+    require(sit.totalSupplyAt(initializedBlock) * 5 <= _totalSupplyCap);
     totalSupplyCap = _totalSupplyCap;
 
     // We are going to sale 70% of total supply cap
     totalSaleSupplyCap = percent(70).mul(_totalSupplyCap).div(percent(100));
 
     minimum_goal = _minimum_goal;
-    initializedBlock = getBlockNumber();
   }
 
   function setMinimumInvestment(
@@ -261,11 +262,27 @@ contract Contribution is Controlled, TokenController, Finalizable {
     return (size > 0);
   }
 
-  function canFinalize() returns (bool) {
-    return sit.totalSupply().add(totalSold) >= minimum_goal;
+  function goalMet() constant returns (bool) {
+    return totalSold >= minimum_goal;
   }
 
-  function finalized() public returns (bool) {
+  function refund() {
+    require(finalized());
+    require(!goalMet());
+
+    uint256 amountTokens = msp.balanceOf(msg.sender);
+    uint256 amountEther = amountTokens.div(exchangeRate);
+    address th = msg.sender;
+
+    Refundable(mspController).refund(th, amountTokens);
+    Refundable(destEthDevs).refund(th, amountEther);
+
+    Refund(th, amountTokens, amountEther);
+  }
+
+  event Refund(address _token_holder, uint256 _amount_tokens, uint256 _amount_ether);
+
+  function finalized() constant public returns (bool) {
     finalizedBlock != 0;
   }
 
@@ -275,27 +292,28 @@ contract Contribution is Controlled, TokenController, Finalizable {
   ///  controller.
   function finalize() public initialized {
     require(getBlockNumber() >= startBlock);
-    require(canFinalize());
     require(msg.sender == controller || getBlockNumber() > endBlock || tokensForSale() == 0);
     require(finalizedBlock == 0);
 
     finalizedBlock = getBlockNumber();
     finalizedTime = now;
 
-    // Generate 5% for the team
-    assert(msp.generateTokens(
-      destTokensTeam,
-      percent(5).mul(totalSupplyCap).div(percent(100))));
+    if (goalMet()) {
+      // Generate 5% for the team
+      assert(msp.generateTokens(
+        destTokensTeam,
+        percent(5).mul(totalSupplyCap).div(percent(100))));
 
-    // Generate 5% for the referal bonuses
-    assert(msp.generateTokens(
-      destTokensReferals,
-      percent(5).mul(totalSupplyCap).div(percent(100))));
+      // Generate 5% for the referal bonuses
+      assert(msp.generateTokens(
+        destTokensReferals,
+        percent(5).mul(totalSupplyCap).div(percent(100))));
 
-    // Generate tokens for SIT exchanger
-    assert(msp.generateTokens(
-      destTokensSit,
-      sit.totalSupply()));
+      // Generate tokens for SIT exchanger
+      assert(msp.generateTokens(
+        destTokensSit,
+        sit.totalSupplyAt(initializedBlock)));
+    }
 
     msp.changeController(mspController);
     Finalized();

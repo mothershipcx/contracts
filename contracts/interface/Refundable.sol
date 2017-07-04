@@ -18,10 +18,6 @@ pragma solidity ^0.4.11;
 
 */
 
-contract Finalizable {
-  uint256 public finalizedBlock;
-
-  function goalMet() constant returns (bool);
-  function finalize();
-  function finalized() constant returns (bool);
+contract Refundable {
+  function refund(address th, uint amount) returns (bool);
 }

@@ -32,9 +32,10 @@ pragma solidity ^0.4.11;
 
 
 import "./interface/Finalizable.sol";
+import "./interface/Refundable.sol";
 
 
-contract ContributionWallet {
+contract ContributionWallet is Refundable {
 
     // Public variables
     address public multisig;
@@ -57,8 +58,13 @@ contract ContributionWallet {
     // @dev Withdraw function sends all the funds to the wallet if conditions are correct
     function withdraw() public {
         require(msg.sender == multisig); // Only the multisig can request it
-        require(contribution.canFinalize() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
+        require(contribution.goalMet() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
         multisig.transfer(this.balance);
     }
 
+    function refund(address th, uint amount) returns (bool) {
+      require(msg.sender == address(contribution));
+      th.transfer(amount);
+      return true;
+    }
 }
