@@ -230,6 +230,9 @@ contract Contribution is Controlled, TokenController, Finalizable {
 
         assert(msp.generateTokens(_th, tokensGenerated));
         totalSold = totalSold.add(tokensGenerated);
+        if (totalSold >= minimum_goal) {
+          goalMet = true;
+        }
         destEthDevs.transfer(toFund);
         NewSale(_th, toFund, tokensGenerated);
       } else {
@@ -263,7 +266,7 @@ contract Contribution is Controlled, TokenController, Finalizable {
   }
 
   function refund() public {
-    require(finalized);
+    require(finalizedBlock != 0);
     require(!goalMet);
 
     uint256 amountTokens = msp.balanceOf(msg.sender);
@@ -290,9 +293,7 @@ contract Contribution is Controlled, TokenController, Finalizable {
     finalizedBlock = getBlockNumber();
     finalizedTime = now;
 
-    if (totalSold >= minimum_goal) {
-      goalMet = true;
-
+    if (goalMet) {
       // Generate 5% for the team
       assert(msp.generateTokens(
         destTokensTeam,
@@ -310,7 +311,6 @@ contract Contribution is Controlled, TokenController, Finalizable {
     }
 
     msp.changeController(mspController);
-    finalized = true;
     Finalized();
   }
 

@@ -11,9 +11,7 @@ contract LeanContribution is Finalizable, TokenController {
     msp = MiniMeTokenI(_msp);
   }
 
-  function finalize() {
-    finalized = true;
-  }
+  function finalize() {}
 
   function proxyPayment(address _owner) payable returns(bool) {
     msp.generateTokens(_owner, msg.value);
