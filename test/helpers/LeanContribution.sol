@@ -5,24 +5,14 @@ import "../../contracts/interface/TokenController.sol";
 import "../../contracts/interface/MiniMeTokenI.sol";
 
 contract LeanContribution is Finalizable, TokenController {
-
-  bool has_finalized;
   MiniMeTokenI msp;
 
   function initialize(address _msp) {
     msp = MiniMeTokenI(_msp);
   }
 
-  function canFinalize() returns (bool) {
-    return true;
-  }
-
   function finalize() {
-    has_finalized = true;
-  }
-
-  function finalized() returns (bool) {
-    return has_finalized;
+    finalized = true;
   }
 
   function proxyPayment(address _owner) payable returns(bool) {

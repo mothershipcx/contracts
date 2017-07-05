@@ -20,8 +20,8 @@ pragma solidity ^0.4.11;
 
 contract Finalizable {
   uint256 public finalizedBlock;
+  bool public goalMet;
+  bool public finalized;
 
-  function goalMet() constant returns (bool);
   function finalize();
-  function finalized() constant returns (bool);
 }

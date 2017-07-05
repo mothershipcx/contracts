@@ -262,13 +262,9 @@ contract Contribution is Controlled, TokenController, Finalizable {
     return (size > 0);
   }
 
-  function goalMet() constant returns (bool) {
-    return totalSold >= minimum_goal;
-  }
-
-  function refund() {
-    require(finalized());
-    require(!goalMet());
+  function refund() public {
+    require(finalized);
+    require(!goalMet);
 
     uint256 amountTokens = msp.balanceOf(msg.sender);
     uint256 amountEther = amountTokens.div(exchangeRate);
@@ -282,10 +278,6 @@ contract Contribution is Controlled, TokenController, Finalizable {
 
   event Refund(address _token_holder, uint256 _amount_tokens, uint256 _amount_ether);
 
-  function finalized() constant public returns (bool) {
-    finalizedBlock != 0;
-  }
-
   /// @notice This method will can be called by the controller before the contribution period
   ///  end or by anybody after the `endBlock`. This method finalizes the contribution period
   ///  by creating the remaining tokens and transferring the controller to the configured
@@ -298,7 +290,9 @@ contract Contribution is Controlled, TokenController, Finalizable {
     finalizedBlock = getBlockNumber();
     finalizedTime = now;
 
-    if (goalMet()) {
+    if (totalSold >= minimum_goal) {
+      goalMet = true;
+
       // Generate 5% for the team
       assert(msp.generateTokens(
         destTokensTeam,
@@ -316,6 +310,7 @@ contract Contribution is Controlled, TokenController, Finalizable {
     }
 
     msp.changeController(mspController);
+    finalized = true;
     Finalized();
   }
 
