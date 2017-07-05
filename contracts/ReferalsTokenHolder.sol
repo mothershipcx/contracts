@@ -14,7 +14,7 @@ contract ReferalsTokenHolder is Controlled {
   }
 
   function spread(address[] _addresses, uint256[] _amounts) public onlyController {
-    require(Finalizable(msp.controller()).finalized());
+    assert(Finalizable(msp.controller()).finalizedBlock() != 0);
     require(_addresses.length == _amounts.length);
 
     for (uint256 i = 0; i < _addresses.length; i++) {

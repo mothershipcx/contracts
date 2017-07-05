@@ -175,5 +175,6 @@ contract('Mothership tokens contribution', function(accounts) {
         _totalSold.plus(_balanceSIT).plus(_balanceTeam).plus(_balanceReferals),
       ),
     )
+    assert.isTrue(await contribution.goalMet.call());
   })
 })

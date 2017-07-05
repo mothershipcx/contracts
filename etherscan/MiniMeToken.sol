@@ -1,12 +1,25 @@
 pragma solidity ^0.4.11;
 
 /*
-  Abstract contract for the full ERC 20 Token standard
-  https://github.com/ethereum/EIPs/issues/20
-
+  Copyright 2017, Anton Egorov (Mothership Foundation)
+  Copyright 2017, Klaus Hott (BlockchainLabs.nz)
   Copyright 2017, Jordi Baylina (Giveth)
 
-  Original contract from https://github.com/status-im/status-network-token/blob/master/contracts/ERC20Token.sol
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  Based on MineMeToken.sol from https://github.com/Giveth/minime
+  Original contract from https://github.com/status-im/status-network-token/blob/master/contracts/MiniMeToken.sol
 */
 
 contract ERC20Token {
@@ -54,14 +67,6 @@ contract ERC20Token {
   event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
 
-/*
-  Copyright 2017, Jorge Izquierdo (Aragon Foundation)
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  Based on MiniMeToken.sol from https://github.com/Giveth/minime
-  Original contract from https://github.com/aragon/aragon-network-token/blob/master/contracts/interface/Controlled.sol
-*/
-
 contract Controlled {
   /// @notice The address of the controller is the only address that can call
   ///  a function with this modifier
@@ -77,13 +82,6 @@ contract Controlled {
     controller = _newController;
   }
 }
-
-/*
-  Copyright 2017, Klaus Hott (BlockchainLabs.nz)
-
-  Based on MiniMeToken.sol from https://github.com/Giveth/minime
-  Original contract from https://github.com/aragon/aragon-network-token/blob/master/contracts/interface/Controlled.sol
-*/
 
 contract Burnable is Controlled {
   /// @notice The address of the controller is the only address that can call
@@ -217,14 +215,6 @@ contract MiniMeTokenI is ERC20Token, Burnable {
     event NewCloneToken(address indexed _cloneToken, uint _snapshotBlock);
 }
 
-/*
-  Copyright 2017, Jorge Izquierdo (Aragon Foundation)
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  Based on MiniMeToken.sol from https://github.com/Giveth/minime
-  Original contract from https://github.com/aragon/aragon-network-token/blob/master/contracts/interface/Controller.sol
-*/
-
 /// @dev The token controller contract must implement these functions
 contract TokenController {
   /// @notice Called when `_owner` sends ether to the MiniMe Token contract
@@ -250,23 +240,9 @@ contract TokenController {
     returns(bool);
 }
 
-/*
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  Original contract from https://github.com/aragon/aragon-network-token/blob/master/contracts/interface/ApproveAndCallReceiver.sol
-*/
-
 contract ApproveAndCallReceiver {
   function receiveApproval(address _from, uint256 _amount, address _token, bytes _data);
 }
-
-/*
-  Copyright 2017, Anton Egorov (Mothership Foundation)
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  Based on MineMeToken.sol from https://github.com/Giveth/minime
-  Original contract from https://github.com/status-im/status-network-token/blob/master/contracts/MiniMeToken.sol
-*/
 
 /// @title MiniMeToken Contract
 /// @author Jordi Baylina
@@ -735,6 +711,7 @@ contract MiniMeToken is MiniMeTokenI {
         }
     }
 
+
 //////////
 // Testing specific methods
 //////////
@@ -778,6 +755,7 @@ contract MiniMeToken is MiniMeTokenI {
         );
 
 }
+
 
 ////////////////
 // MiniMeTokenFactory

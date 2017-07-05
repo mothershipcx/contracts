@@ -52,7 +52,7 @@ contract SITExchanger is Controlled, TokenController {
   ///  corresponding MSPs
   function collect() public {
     // SIT sholder could collect MSP right after contribution started
-    require(getBlockNumber() > contribution.startBlock());
+    assert(getBlockNumber() > contribution.startBlock());
 
     // Get current MSP ballance
     uint256 balance = sit.balanceOfAt(msg.sender, contribution.initializedBlock());
@@ -100,7 +100,7 @@ contract SITExchanger is Controlled, TokenController {
   /// @param _token The address of the token contract that you want to recover
   ///  set to 0 in case you want to extract ether.
   function claimTokens(address _token) public onlyController {
-    require(_token != address(msp));
+    assert(_token != address(msp));
     if (_token == 0x0) {
       controller.transfer(this.balance);
       return;

@@ -1,15 +1,8 @@
 pragma solidity ^0.4.11;
 
-contract Finalizable {
-  uint256 public finalizedBlock;
-
-  function canFinalize() returns (bool);
-  function finalize();
-  function finalized() returns (bool);
-}
-
 /*
     Copyright 2017, Anton Egorov (Mothership Foundation)
+    Copyright 2017, Klaus Hott (BlockchainLabs.nz)
     Copyright 2017, Jordi Baylina (Giveth)
 
     This program is free software: you can redistribute it and/or modify
@@ -24,7 +17,18 @@ contract Finalizable {
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  */
+
+contract Finalizable {
+  uint256 public finalizedBlock;
+  bool public goalMet;
+
+  function finalize();
+}
+
+contract Refundable {
+  function refund(address th, uint amount) returns (bool);
+}
 
 /// @title ContributionWallet Contract
 /// @author Jordi Baylina
@@ -38,7 +42,7 @@ contract Finalizable {
 // to the sale contract to mint tokens to itself, and getting the
 // funds back immediately.
 
-contract ContributionWallet {
+contract ContributionWallet is Refundable {
 
     // Public variables
     address public multisig;
@@ -60,10 +64,14 @@ contract ContributionWallet {
 
     // @dev Withdraw function sends all the funds to the wallet if conditions are correct
     function withdraw() public {
-        require(msg.sender == multisig);              // Only the multisig can request it
-        // TODO check for minimal goal instead of end of contribution
-        require(contribution.canFinalize() || contribution.finalizedBlock() != 0);  // Allow when sale is finalized
+        require(msg.sender == multisig); // Only the multisig can request it
+        assert(contribution.goalMet() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
         multisig.transfer(this.balance);
     }
 
+    function refund(address th, uint amount) returns (bool) {
+      assert(msg.sender == address(contribution));
+      th.transfer(amount);
+      return true;
+    }
 }

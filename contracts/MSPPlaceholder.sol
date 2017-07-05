@@ -29,13 +29,14 @@ pragma solidity ^0.4.11;
 
 import "./misc/SafeMath.sol";
 import "./interface/Controlled.sol";
+import "./interface/Refundable.sol";
 import "./interface/TokenController.sol";
 import "./interface/ERC20Token.sol";
 import "./interface/MiniMeTokenI.sol";
 import "./Contribution.sol";
 
 
-contract MSPPlaceHolder is Controlled, TokenController {
+contract MSPPlaceHolder is Controlled, TokenController, Refundable {
   using SafeMath for uint256;
 
   MiniMeTokenI public msp;
@@ -66,6 +67,11 @@ contract MSPPlaceHolder is Controlled, TokenController {
     ControllerChanged(_newController);
   }
 
+  function refund(address th, uint amount) returns (bool) {
+    assert(msg.sender == address(contribution));
+    msp.destroyTokens(th, amount);
+    return true;
+  }
 
   //////////
   // MiniMe Controller Interface functions
@@ -85,6 +91,7 @@ contract MSPPlaceHolder is Controlled, TokenController {
   }
 
   function transferable(address _from) internal returns (bool) {
+    if (!contribution.goalMet()) return false;
     // Allow the exchanger to work from the beginning
     if (activationTime == 0) {
       uint256 f = contribution.finalizedTime();
