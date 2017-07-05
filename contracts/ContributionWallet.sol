@@ -58,7 +58,7 @@ contract ContributionWallet is Refundable {
     // @dev Withdraw function sends all the funds to the wallet if conditions are correct
     function withdraw() public {
         require(msg.sender == multisig); // Only the multisig can request it
-        require(contribution.goalMet() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
+        assert(contribution.goalMet() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
         multisig.transfer(this.balance);
     }
 
