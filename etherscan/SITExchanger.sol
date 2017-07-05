@@ -531,6 +531,7 @@ contract Contribution is Controlled, TokenController, Finalizable {
     require(!goalMet);
 
     uint256 amountTokens = msp.balanceOf(msg.sender);
+    require(amountTokens > 0);
     uint256 amountEther = amountTokens.div(exchangeRate);
     address th = msg.sender;
 
