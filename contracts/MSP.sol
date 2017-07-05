@@ -16,6 +16,6 @@ contract MSP is MiniMeToken {
                 "Mothership Token", // Token name
                 18,                 // Decimals
                 "MSP",              // Symbol
-                false               // Enable transfers
+                true                // Enable transfers
                 ) {}
 }

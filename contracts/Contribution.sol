@@ -31,9 +31,6 @@ import "./interface/Finalizable.sol";
 contract Contribution is Controlled, TokenController, Finalizable {
   using SafeMath for uint256;
 
-  uint256 constant public maxGasPrice = 50000000000;
-  uint256 constant public maxCallFrequency = 100;
-
   uint256 public totalSupplyCap; // Total MSP supply to be generated
   uint256 public exchangeRate; // ETH-MSP exchange rate
   uint256 public totalSold; // How much tokens sold
@@ -57,8 +54,6 @@ contract Contribution is Controlled, TokenController, Finalizable {
 
   uint256 public minimum_investment;
   uint256 public minimum_goal;
-
-  mapping (address => uint256) public lastCallBlock;
 
   bool public paused;
 
@@ -169,6 +164,13 @@ contract Contribution is Controlled, TokenController, Finalizable {
     minimum_investment = _minimum_investment;
   }
 
+  function setExchangeRate(
+      uint _exchangeRate
+  ) public onlyController {
+    assert(getBlockNumber() < startBlock);
+    exchangeRate = _exchangeRate;
+  }
+
   /// @notice If anybody sends Ether directly to this contract, consider he is
   ///  getting MSPs.
   function () public payable notPaused {
@@ -199,7 +201,6 @@ contract Contribution is Controlled, TokenController, Finalizable {
   }
 
   function doBuy(address _th) internal {
-    require(tx.gasprice <= maxGasPrice);
     require(msg.value >= minimum_investment);
 
     // Antispam mechanism
@@ -212,9 +213,6 @@ contract Contribution is Controlled, TokenController, Finalizable {
 
     // Do not allow contracts to game the system
     assert(!isContract(caller));
-
-    assert(getBlockNumber().sub(lastCallBlock[caller]) >= maxCallFrequency);
-    lastCallBlock[caller] = getBlockNumber();
 
     uint256 toFund = msg.value;
     uint256 leftForSale = tokensForSale();
