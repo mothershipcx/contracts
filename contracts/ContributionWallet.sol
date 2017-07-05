@@ -63,7 +63,7 @@ contract ContributionWallet is Refundable {
     }
 
     function refund(address th, uint amount) returns (bool) {
-      require(msg.sender == address(contribution));
+      assert(msg.sender == address(contribution));
       th.transfer(amount);
       return true;
     }

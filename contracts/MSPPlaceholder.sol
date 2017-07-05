@@ -68,7 +68,7 @@ contract MSPPlaceHolder is Controlled, TokenController, Refundable {
   }
 
   function refund(address th, uint amount) returns (bool) {
-    require(msg.sender == address(contribution));
+    assert(msg.sender == address(contribution));
     msp.destroyTokens(th, amount);
     return true;
   }

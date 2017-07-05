@@ -63,12 +63,12 @@ contract Contribution is Controlled, TokenController, Finalizable {
   bool public paused;
 
   modifier initialized() {
-    require(address(msp) != 0x0);
+    assert(address(msp) != 0x0);
     _;
   }
 
   modifier contributionOpen() {
-    require(getBlockNumber() >= startBlock &&
+    assert(getBlockNumber() >= startBlock &&
             getBlockNumber() <= endBlock &&
             finalizedBlock == 0 &&
             address(msp) != 0x0);
@@ -119,12 +119,12 @@ contract Contribution is Controlled, TokenController, Finalizable {
       address _sit
   ) public onlyController {
     // Initialize only once
-    require(address(msp) == 0x0);
+    assert(address(msp) == 0x0);
 
     msp = MiniMeTokenI(_msp);
-    require(msp.totalSupply() == 0);
-    require(msp.controller() == address(this));
-    require(msp.decimals() == 18);  // Same amount of decimals as ETH
+    assert(msp.totalSupply() == 0);
+    assert(msp.controller() == address(this));
+    assert(msp.decimals() == 18);  // Same amount of decimals as ETH
 
     require(_mspController != 0x0);
     mspController = _mspController;
@@ -132,7 +132,7 @@ contract Contribution is Controlled, TokenController, Finalizable {
     require(_exchangeRate > 0);
     exchangeRate = _exchangeRate;
 
-    require(_startBlock >= getBlockNumber());
+    assert(_startBlock >= getBlockNumber());
     require(_startBlock < _endBlock);
     startBlock = _startBlock;
     endBlock = _endBlock;
@@ -154,7 +154,7 @@ contract Contribution is Controlled, TokenController, Finalizable {
 
     initializedBlock = getBlockNumber();
     // SIT amount should be no more than 20% of MSP total supply cap
-    require(sit.totalSupplyAt(initializedBlock) * 5 <= _totalSupplyCap);
+    assert(sit.totalSupplyAt(initializedBlock) * 5 <= _totalSupplyCap);
     totalSupplyCap = _totalSupplyCap;
 
     // We are going to sale 70% of total supply cap
@@ -211,9 +211,9 @@ contract Contribution is Controlled, TokenController, Finalizable {
     }
 
     // Do not allow contracts to game the system
-    require(!isContract(caller));
+    assert(!isContract(caller));
 
-    require(getBlockNumber().sub(lastCallBlock[caller]) >= maxCallFrequency);
+    assert(getBlockNumber().sub(lastCallBlock[caller]) >= maxCallFrequency);
     lastCallBlock[caller] = getBlockNumber();
 
     uint256 toFund = msg.value;
@@ -286,8 +286,8 @@ contract Contribution is Controlled, TokenController, Finalizable {
   ///  by creating the remaining tokens and transferring the controller to the configured
   ///  controller.
   function finalize() public initialized {
-    require(getBlockNumber() >= startBlock);
-    require(msg.sender == controller || getBlockNumber() > endBlock || tokensForSale() == 0);
+    assert(getBlockNumber() >= startBlock);
+    assert(msg.sender == controller || getBlockNumber() > endBlock || tokensForSale() == 0);
     require(finalizedBlock == 0);
 
     finalizedBlock = getBlockNumber();
