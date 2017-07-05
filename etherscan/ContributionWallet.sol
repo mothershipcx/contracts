@@ -17,16 +17,14 @@ pragma solidity ^0.4.11;
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  */
 
- contract Finalizable {
-   uint256 public finalizedBlock;
-   bool public goalMet;
-   bool public finalized;
+contract Finalizable {
+  uint256 public finalizedBlock;
+  bool public goalMet;
 
-   function finalize();
- }
-
+  function finalize();
+}
 
 contract Refundable {
   function refund(address th, uint amount) returns (bool);
@@ -67,12 +65,12 @@ contract ContributionWallet is Refundable {
     // @dev Withdraw function sends all the funds to the wallet if conditions are correct
     function withdraw() public {
         require(msg.sender == multisig); // Only the multisig can request it
-        require(contribution.goalMet() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
+        assert(contribution.goalMet() || contribution.finalizedBlock() != 0); // Allow when sale is finalized
         multisig.transfer(this.balance);
     }
 
     function refund(address th, uint amount) returns (bool) {
-      require(msg.sender == address(contribution));
+      assert(msg.sender == address(contribution));
       th.transfer(amount);
       return true;
     }
