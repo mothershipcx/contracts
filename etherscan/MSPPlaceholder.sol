@@ -19,8 +19,6 @@ pragma solidity ^0.4.11;
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  Based on SampleCampaign-TokenController.sol from https://github.com/Giveth/minime
-  Original contract is https://github.com/status-im/status-network-token/blob/master/contracts/StatusContribution.sol
 */
 
 library SafeMath {
