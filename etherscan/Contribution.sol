@@ -1,8 +1,28 @@
 pragma solidity ^0.4.11;
 
-/**
- * Math operations with safety checks
- */
+/*
+  Copyright 2017, Anton Egorov (Mothership Foundation)
+  Copyright 2017, Klaus Hott (BlockchainLabs.nz)
+  Copyright 2017, Jorge Izquierdo (Aragon Foundation)
+  Copyright 2017, Jordi Baylina (Giveth)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  Based on SampleCampaign-TokenController.sol from https://github.com/Giveth/minime
+  Original contract is https://github.com/status-im/status-network-token/blob/master/contracts/StatusContribution.sol
+*/
+
 library SafeMath {
   function mul(uint a, uint b) internal returns (uint) {
     uint c = a * b;
@@ -45,14 +65,6 @@ library SafeMath {
   }
 }
 
-/*
-  Copyright 2017, Jorge Izquierdo (Aragon Foundation)
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  Based on MiniMeToken.sol from https://github.com/Giveth/minime
-  Original contract from https://github.com/aragon/aragon-network-token/blob/master/contracts/interface/Controlled.sol
-*/
-
 contract Controlled {
   /// @notice The address of the controller is the only address that can call
   ///  a function with this modifier
@@ -69,13 +81,9 @@ contract Controlled {
   }
 }
 
-/*
-  Copyright 2017, Jorge Izquierdo (Aragon Foundation)
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  Based on MiniMeToken.sol from https://github.com/Giveth/minime
-  Original contract from https://github.com/aragon/aragon-network-token/blob/master/contracts/interface/Controller.sol
-*/
+contract Refundable {
+  function refund(address th, uint amount) returns (bool);
+}
 
 /// @dev The token controller contract must implement these functions
 contract TokenController {
@@ -101,15 +109,6 @@ contract TokenController {
   function onApprove(address _owner, address _spender, uint _amount)
     returns(bool);
 }
-
-/*
-  Abstract contract for the full ERC 20 Token standard
-  https://github.com/ethereum/EIPs/issues/20
-
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  Original contract from https://github.com/status-im/status-network-token/blob/master/contracts/ERC20Token.sol
-*/
 
 contract ERC20Token {
   /* This is a slight change to the ERC20 base standard.
@@ -290,32 +289,11 @@ contract MiniMeTokenI is ERC20Token, Burnable {
 
 contract Finalizable {
   uint256 public finalizedBlock;
+  bool public goalMet;
+  bool public finalized;
 
-  function canFinalize() returns (bool);
   function finalize();
-  function finalized() returns (bool);
 }
-
-/*
-  Copyright 2017, Anton Egorov (Mothership Foundation)
-  Copyright 2017, Jordi Baylina (Giveth)
-
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-  Based on SampleCampaign-TokenController.sol from https://github.com/Giveth/minime
-  Original contract is https://github.com/status-im/status-network-token/blob/master/contracts/StatusContribution.sol
-*/
 
 contract Contribution is Controlled, TokenController, Finalizable {
   using SafeMath for uint256;
@@ -441,15 +419,15 @@ contract Contribution is Controlled, TokenController, Finalizable {
     require(_sit != 0x0);
     sit = MiniMeTokenI(_sit);
 
+    initializedBlock = getBlockNumber();
     // SIT amount should be no more than 20% of MSP total supply cap
-    require(MiniMeTokenI(sit).totalSupply() * 5 <= _totalSupplyCap);
+    require(sit.totalSupplyAt(initializedBlock) * 5 <= _totalSupplyCap);
     totalSupplyCap = _totalSupplyCap;
 
     // We are going to sale 70% of total supply cap
     totalSaleSupplyCap = percent(70).mul(_totalSupplyCap).div(percent(100));
 
     minimum_goal = _minimum_goal;
-    initializedBlock = getBlockNumber();
   }
 
   function setMinimumInvestment(
@@ -551,13 +529,21 @@ contract Contribution is Controlled, TokenController, Finalizable {
     return (size > 0);
   }
 
-  function canFinalize() returns (bool) {
-    return sit.totalSupply().add(totalSold) >= minimum_goal;
+  function refund() public {
+    require(finalized);
+    require(!goalMet);
+
+    uint256 amountTokens = msp.balanceOf(msg.sender);
+    uint256 amountEther = amountTokens.div(exchangeRate);
+    address th = msg.sender;
+
+    Refundable(mspController).refund(th, amountTokens);
+    Refundable(destEthDevs).refund(th, amountEther);
+
+    Refund(th, amountTokens, amountEther);
   }
 
-  function finalized() public returns (bool) {
-    finalizedBlock != 0;
-  }
+  event Refund(address _token_holder, uint256 _amount_tokens, uint256 _amount_ether);
 
   /// @notice This method will can be called by the controller before the contribution period
   ///  end or by anybody after the `endBlock`. This method finalizes the contribution period
@@ -565,29 +551,33 @@ contract Contribution is Controlled, TokenController, Finalizable {
   ///  controller.
   function finalize() public initialized {
     require(getBlockNumber() >= startBlock);
-    require(canFinalize());
     require(msg.sender == controller || getBlockNumber() > endBlock || tokensForSale() == 0);
     require(finalizedBlock == 0);
 
     finalizedBlock = getBlockNumber();
     finalizedTime = now;
 
-    // Generate 5% for the team
-    assert(msp.generateTokens(
-      destTokensTeam,
-      percent(5).mul(totalSupplyCap).div(percent(100))));
+    if (totalSold >= minimum_goal) {
+      goalMet = true;
 
-    // Generate 5% for the referal bonuses
-    assert(msp.generateTokens(
-      destTokensReferals,
-      percent(5).mul(totalSupplyCap).div(percent(100))));
+      // Generate 5% for the team
+      assert(msp.generateTokens(
+        destTokensTeam,
+        percent(5).mul(totalSupplyCap).div(percent(100))));
 
-    // Generate tokens for SIT exchanger
-    assert(msp.generateTokens(
-      destTokensSit,
-      sit.totalSupply()));
+      // Generate 5% for the referal bonuses
+      assert(msp.generateTokens(
+        destTokensReferals,
+        percent(5).mul(totalSupplyCap).div(percent(100))));
+
+      // Generate tokens for SIT exchanger
+      assert(msp.generateTokens(
+        destTokensSit,
+        sit.totalSupplyAt(initializedBlock)));
+    }
 
     msp.changeController(mspController);
+    finalized = true;
     Finalized();
   }
 
