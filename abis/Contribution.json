@@ -41,19 +41,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "maxCallFrequency",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "minimum_goal",
     "outputs": [
       {
@@ -100,19 +87,6 @@
     ],
     "name": "changeController",
     "outputs": [],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "maxGasPrice",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
     "payable": false,
     "type": "function"
   },
@@ -194,24 +168,6 @@
     "inputs": [],
     "name": "finalize",
     "outputs": [],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "lastCallBlock",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
     "payable": false,
     "type": "function"
   },
@@ -480,6 +436,19 @@
         "type": "bool"
       }
     ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_exchangeRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setExchangeRate",
+    "outputs": [],
     "payable": false,
     "type": "function"
   },
