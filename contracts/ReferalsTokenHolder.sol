@@ -3,7 +3,6 @@ pragma solidity ^0.4.11;
 
 import "./interface/Controlled.sol";
 import "./interface/MiniMeTokenI.sol";
-import "./interface/Finalizable.sol";
 
 contract ReferalsTokenHolder is Controlled {
   MiniMeTokenI public msp;
@@ -14,7 +13,6 @@ contract ReferalsTokenHolder is Controlled {
   }
 
   function spread(address[] _addresses, uint256[] _amounts) public onlyController {
-    assert(Finalizable(msp.controller()).finalizedBlock() != 0);
     require(_addresses.length == _amounts.length);
 
     for (uint256 i = 0; i < _addresses.length; i++) {
