@@ -214,12 +214,6 @@ contract MiniMeTokenI is ERC20Token, Burnable {
     event NewCloneToken(address indexed _cloneToken, uint _snapshotBlock);
 }
 
-contract Finalizable {
-  uint256 public finalizedBlock;
-  bool public goalMet;
-
-  function finalize();
-}
 contract ReferalsTokenHolder is Controlled {
   MiniMeTokenI public msp;
   mapping (address => bool) been_spread;
@@ -229,7 +223,6 @@ contract ReferalsTokenHolder is Controlled {
   }
 
   function spread(address[] _addresses, uint256[] _amounts) public onlyController {
-    assert(Finalizable(msp.controller()).finalizedBlock() != 0);
     require(_addresses.length == _amounts.length);
 
     for (uint256 i = 0; i < _addresses.length; i++) {
